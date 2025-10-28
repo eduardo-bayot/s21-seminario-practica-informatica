@@ -1,0 +1,54 @@
+@startuml CU02 - Filtrar Mensaje con Mayúsculas
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+
+actor "Usuario" as Usuario
+participant "VentanaAdmin" as Ventana
+participant "ServicioValidacion" as Validacion
+participant "Mensaje" as Mensaje
+
+Usuario -> Ventana: envía mensaje
+activate Ventana
+
+Ventana -> Validacion: validarMensaje(mensaje)
+activate Validacion
+
+Validacion -> Mensaje: getContenido()
+activate Mensaje
+Mensaje --> Validacion: contenido
+deactivate Mensaje
+
+Validacion -> Validacion: tieneExcesoMayusculas(contenido)
+activate Validacion
+
+note right of Validacion
+  Calcula porcentaje de mayúsculas
+  Umbral > 50%
+end note
+
+alt porcentaje > 50%
+    Validacion --> Validacion: return true
+    Validacion --> Validacion: agregarRazon("Exceso de mayúsculas")
+else porcentaje <= 50%
+    Validacion --> Validacion: return false
+    Validacion --> Validacion: continuar validación
+end
+
+Validacion --> Ventana: razones[]
+deactivate Validacion
+
+Ventana -> Ventana: actualizarEstado()
+activate Ventana
+
+note right of Ventana
+  Si hay razones:
+  - Marcado como BLOQUEADO
+  - Muestra razones de bloqueo
+end note
+
+Ventana --> Usuario: muestra resultado
+deactivate Ventana
+
+@enduml
+

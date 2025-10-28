@@ -1,0 +1,154 @@
+@startuml Class Diagram - Sistema de Moderación
+skinparam classAttributeIconSize 0
+skinparam roundcorner 15
+
+package "com.moderacion" {
+  
+  class Mensaje {
+    -id: int
+    -contenido: String
+    -estado: EstadoMensaje
+    -fechaCreacion: LocalDateTime
+    -usuarioId: int
+    -razonesBloqueo: List<String>
+    +getId(): int
+    +setId(id: int): void
+    +getContenido(): String
+    +setContenido(contenido: String): void
+    +getEstado(): EstadoMensaje
+    +setEstado(estado: EstadoMensaje): void
+    +getRazonesBloqueo(): List<String>
+    +setRazonesBloqueo(razones: List<String>): void
+    +agregarRazonBloqueo(razon: String): void
+    +getFechaCreacion(): LocalDateTime
+    +getUsuarioId(): int
+    +toString(): String
+  }
+  
+  enum EstadoMensaje {
+    NUEVO
+    PENDIENTE
+    EN_MODERACION
+    BLOQUEADO
+    APROBADO
+    RECHAZADO
+    SOSPECHOSO
+    +getDescripcion(): String
+  }
+  
+  class PalabraProhibida {
+    -id: int
+    -palabra: String
+    -razon: String
+    -severidad: int
+    +getId(): int
+    +getPalabra(): String
+    +getRazon(): String
+    +getSeveridad(): int
+  }
+  
+  class PalabraPeso {
+    -id: int
+    -palabra: String
+    -peso: double
+    -contexto: String
+    +getId(): int
+    +getPalabra(): String
+    +getPeso(): double
+    +getContexto(): String
+  }
+  
+  class MensajeDAO {
+    -URL: String
+    -USER: String
+    -PASSWORD: String
+    +obtenerMensajesPendientes(): List<Mensaje>
+    +obtenerUltimosMensajes(usuarioId: int, cantidad: int): List<Mensaje>
+    +aprobarMensaje(id: int): boolean
+    +rechazarMensaje(id: int): boolean
+    -crearMensajeDesdeResultSet(rs: ResultSet): Mensaje
+    -actualizarEstado(id: int, sql: String): boolean
+  }
+  
+  class PalabraProhibidaDAO {
+    -URL: String
+    -USER: String
+    -PASSWORD: String
+    +obtenerTodas(): List<PalabraProhibida>
+    +buscarPalabraProhibida(palabra: String): PalabraProhibida
+    +contienePalabraProhibida(contenido: String): boolean
+    +obtenerPrimeraPalabraProhibida(contenido: String): PalabraProhibida
+  }
+  
+  class PalabraPesoDAO {
+    -URL: String
+    -USER: String
+    -PASSWORD: String
+    +obtenerPesoPalabra(palabra: String): Optional<PalabraPeso>
+    +obtenerTodas(): List<PalabraPeso>
+    +obtenerPesoOPorDefecto(palabra: String, porDefecto: double): double
+  }
+  
+  class ServicioValidacion {
+    -mensajeDAO: MensajeDAO
+    -palabraProhibidaDAO: PalabraProhibidaDAO
+    -palabraPesoDAO: PalabraPesoDAO
+    +validarMensaje(mensaje: Mensaje): List<String>
+    +determinarEstado(razones: List<String>): EstadoMensaje
+    -contienePalabrasProhibidas(contenido: String): boolean
+    -tieneExcesoMayusculas(contenido: String): boolean
+    -contieneCorreoElectronico(contenido: String): boolean
+    -contieneTelefono(contenido: String): boolean
+    -tieneExcesoPuntuacion(contenido: String): boolean
+    -calcularPeso(contenido: String): double
+    -tieneRepeticionesExcesivas(contenido: String): boolean
+    -envioDemasiadoRapido(mensaje: Mensaje): boolean
+  }
+  
+  class VentanaAdmin {
+    -listaMensajes: JList<Mensaje>
+    -modeloLista: DefaultListModel<Mensaje>
+    -areaContenido: JTextArea
+    -labelEstado: JLabel
+    -areaRazones: JTextArea
+    -mensajeDAO: MensajeDAO
+    -servicioValidacion: ServicioValidacion
+    +VentanaAdmin()
+    -inicializarComponentes(): void
+    -cargarMensajesPendientes(): void
+    -mostrarDetalleMensaje(): void
+    -aprobarMensajeSeleccionado(): void
+    -rechazarMensajeSeleccionado(): void
+    -validarMensajeSeleccionado(): void
+    -actualizarMensajeEnBD(mensaje: Mensaje): void
+    +main(args: String[]): void
+  }
+  
+  class Main {
+    +main(args: String[]): void
+  }
+}
+
+' Relaciones
+Mensaje "1" --> "*" EstadoMensaje
+MensajeDAO --> Mensaje : "1..*"
+PalabraProhibidaDAO --> PalabraProhibida : "1..*"
+PalabraPesoDAO --> PalabraPeso : "1..*"
+ServicioValidacion --> MensajeDAO
+ServicioValidacion --> PalabraProhibidaDAO
+ServicioValidacion --> PalabraPesoDAO
+ServicioValidacion --> Mensaje
+VentanaAdmin --> MensajeDAO
+VentanaAdmin --> ServicioValidacion
+VentanaAdmin --> Mensaje
+Main --> VentanaAdmin
+
+database "MySQL" as DB {
+}
+
+MensajeDAO ..> DB : accesses
+PalabraProhibidaDAO ..> DB : accesses
+PalabraPesoDAO ..> DB : accesses
+
+@enduml
+

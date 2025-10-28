@@ -1,0 +1,4 @@
+contenido,estado,usuario,razonBloqueo
+"Este es un mensaje normal.",aprobado,"Ana Martinez",NULL
+"Hola, ¿cómo estás?",aprobado,"Lucia Lopez",NULL
+"¡Esto es increíble!!!","en moderacion","Juan Perez",NULL

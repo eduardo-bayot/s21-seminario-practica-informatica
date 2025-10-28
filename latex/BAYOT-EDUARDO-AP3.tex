@@ -1,0 +1,1261 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{adjustbox}
+
+% Configuración de listings para SQL
+\lstdefinestyle{sqlstyle}{
+    language=SQL,
+    basicstyle=\ttfamily\small,
+    commentstyle=\color{green!60!black},
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={\%*}{*)},
+    extendedchars=true,
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+             {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+             {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+}
+\lstset{style=sqlstyle}
+
+% Comando para escalar imágenes automáticamente
+\newcommand{\scalegraphic}[2][0.8\textwidth]{
+    \adjustbox{max width=#1, max height=0.85\textheight, keepaspectratio}{\includegraphics{#2}}
+}
+
+\geometry{a4paper, margin=2.5cm}
+\setlength{\headheight}{14.49998pt}
+\addtolength{\topmargin}{-2.49998pt}
+
+% Configuración de headers y footers
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Bayot, Eduardo}
+\lhead{Sistema de Moderación Escalonada}
+\cfoot{\thepage}
+
+\title{Análisis y Diseño del Sistema de Moderación Escalonada y Eficaz}
+\author{Bayot, Eduardo}
+\date{\today}
+
+\begin{document}
+
+% Portada personalizada
+\begin{titlepage}
+\centering
+\vspace*{1cm}
+
+% Logo de la Universidad
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=6cm]{../Logo_de_la_Universidad_Siglo_21.png}
+\end{figure}
+
+\vspace{1.5cm}
+
+% Título
+{\huge \textbf{Análisis y Diseño del Sistema de Moderación Escalonada y Eficaz}}
+
+\vspace{1cm}
+
+% Información del trabajo
+{\large
+\textbf{Trabajo Práctico 3}
+
+\textbf{Seminario de Práctica de Informática}
+
+Universidad Siglo 21
+
+Ciclo 2025
+}
+
+\vspace{2cm}
+
+% Información del estudiante
+\begin{flushleft}
+\large
+\textbf{Alumno:} Eduardo Agustin Bayot
+
+\textbf{Catedra:} E
+
+\textbf{Profesor Titular Disciplinar:} Pablo Alejandro Virgolini
+
+\textbf{Profesor Titular Experto:} Ana Carolina Ferreyra
+
+\textbf{Materia:} Seminario de Practica de Informatica
+
+\textbf{Fecha:} \today
+\end{flushleft}
+
+\vspace{2cm}
+
+% Información adicional
+\begin{center}
+\large
+\textbf{Resumen}
+
+\vspace{0.5cm}
+\small
+Este documento presenta el análisis y diseño de un sistema de moderación escalonada implementado como aplicación de escritorio en Java Swing, destinado a plataformas de juegos online. El sistema reduce costos operativos mediante validaciones automáticas locales antes de escalar casos complejos a herramientas avanzadas de machine learning.
+
+El desarrollo incluye la especificación de casos de uso, modelado de clases, diagramas de secuencia, componentes y despliegue, además de una base de datos MySQL para la gestión de mensajes, palabras prohibidas y algoritmos de validación.
+
+\vspace{1cm}
+
+\textbf{Palabras Clave:} Moderación de contenido, Java Swing, MySQL, Sistema escalonado, Análisis y Diseño de Sistemas
+\end{center}
+
+\vfill
+
+\begin{center}
+\small
+Universidad Siglo 21 - Seminario de Práctica de Informática
+
+2025
+\end{center}
+
+\end{titlepage}
+
+% Tabla de contenidos
+\tableofcontents
+\newpage
+
+\section{Introducción}
+
+Este documento presenta el \textbf{Análisis y Diseño} de un sistema de moderación escalonada y eficaz para plataformas de juego online. El sistema está diseñado como una \textbf{aplicación de escritorio} desarrollada en Java que permite a moderadores humanos revisar, aprobar o rechazar mensajes que han sido previamente clasificados por el sistema de validación automática.
+
+El objetivo principal del sistema es reducir los costos operativos asociados con el uso de APIs externas de machine learning, implementando una serie de filtros locales escalonados que pueden bloquear automáticamente mensajes obviamente inapropiados, y dejar solo los casos limítrofes para revisión manual o análisis avanzado.
+
+La implementación consiste en una aplicación desktop desarrollada en Java Swing que se conecta a una base de datos MySQL para almacenar mensajes pendientes, palabras prohibidas, y los pesos asociados a palabras sospechosas según algoritmos de moderación.
+
+\section{Justificación}
+
+El desarrollo de sistemas de moderación escalonada se ha vuelto esencial en plataformas de juegos online que manejan millones de usuarios. Las soluciones basadas exclusivamente en APIs externas de machine learning resultan costosas cuando se aplican a todos los mensajes, especialmente cuando una gran proporción de contenido puede ser filtrado mediante reglas simples y rápidas.
+
+Nuestra propuesta implementa una \textbf{aplicación de escritorio} que permite a moderadores humanos procesar eficientemente los mensajes que requieren atención, mientras que el sistema automáticamente bloquea contenido obviamente inapropiado mediante una serie de algoritmos escalonados. Esta aproximación reduce significativamente los costos operativos al minimizar las consultas a APIs externas costosas.
+
+La aplicación desktop desarrollada en Java Swing proporciona una interfaz intuitiva para que moderadores puedan:
+\begin{itemize}
+\item Revisar mensajes marcados como sospechosos
+\item Ver las razones específicas de por qué un mensaje fue bloqueado
+\item Aprobar o rechazar mensajes manualmente
+\item Validar mensajes automáticamente aplicando todos los filtros
+\item Actualizar el estado de los mensajes en tiempo real
+\end{itemize}
+
+\section{Definiciones del Proyecto y del Sistema}
+
+\subsection{Objetivo del Proyecto:}
+
+Desarrollar un sistema de moderación escalonada que reduzca los costos operativos asociados con el uso de APIs externas de machine learning, implementando filtros locales eficientes que permitan bloquear mensajes inapropiados antes de requerir procesamiento externo.
+
+\subsection{Objetivo General del Sistema:}
+
+Implementar una aplicación de escritorio que permita a moderadores humanos revisar y gestionar mensajes de chat en una plataforma de juego online, utilizando un sistema de validación automática escalonada que detecta contenido inapropiado mediante múltiples algoritmos locales antes de escalar casos complejos a herramientas más avanzadas.
+
+\subsection{Objetivos Específicos:}
+
+\begin{itemize}
+\item Implementar validaciones locales para detectar mayúsculas excesivas, puntuación abusiva, y uso de expresiones regulares.
+\item Integrar con base de datos MySQL para consultas de palabras prohibidas y pesos de palabras.
+\item Desarrollar una interfaz gráfica intuitiva para moderadores utilizando Java Swing.
+\item Implementar un algoritmo de peso escalado que combine múltiples indicadores de riesgo.
+\item Proporcionar retroalimentación clara a los moderadores sobre las razones de bloqueo de cada mensaje.
+\end{itemize}
+
+\subsection{Definiciones Técnicas del Sistema:}
+
+El sistema está implementado como una \textbf{aplicación de escritorio} en Java que utiliza:
+
+\begin{itemize}
+\item Mensajes de chat de hasta 255 caracteres enviados por los usuarios dentro de la plataforma de juego, junto con la información de la hora y fecha de envío.
+\item El sistema debe devolver el mensaje original, un estado que indique si el mensaje fue marcado o no, y el motivo del marcado (ejemplo: "palabra prohibida", "mensaje repetido").
+\item Cada mensaje procesado genera un hash que se almacena en una tabla de MySQL junto con la fecha y hora de envío, permitiendo detectar mensajes duplicados o patrones de spam.
+\end{itemize}
+
+\section{Elicitación}
+
+\subsection{Técnicas de Elicitación Utilizadas:}
+
+\begin{itemize}
+\item Revisión de Casos Existentes:
+\item Se analizaron sistemas de moderación en diversas plataformas que cuentan con millones de usuarios activos. Estas plataformas han desarrollado soluciones escalables para la moderación de mensajes, utilizando enfoques basados en reglas simples, así como integraciones con APIs más avanzadas cuando es necesario. Este enfoque permitió identificar patrones clave y requisitos funcionales, tales como la importancia de un sistema de moderación previo para reducir costos en el uso de herramientas más avanzadas, como las basadas en machine learning.
+\item Análisis Competitivo:
+\item Se llevó a cabo un análisis de las herramientas y tecnologías utilizadas por la competencia, comparando sus enfoques para la moderación de contenido en tiempo real. Esto permitió identificar que muchos sistemas exitosos recurren a filtros escalonados que aplican una serie de chequeos básicos (como palabras prohibidas y uso excesivo de caracteres) antes de delegar a herramientas más costosas.
+\item Entrevistas con Expertos en Moderación:
+\item A través de entrevistas con expertos, se estableció la necesidad de contar con un sistema que filtre mensajes de manera eficiente y escalonada, evitando que los moderadores humanos deban intervenir en todos los casos. Se priorizó la construcción de un sistema que pueda retornar mensajes con estado (aprobado, bloqueado o sospechoso), sin que los moderadores conozcan quién o qué bloqueó el mensaje. Este proceso asegura un flujo eficiente de trabajo y evita el sesgo en las revisiones humanas.
+\item Estudio de Normativas y Buenas Prácticas:
+\item Se revisaron normativas de plataformas líderes en juegos online para cumplir con las regulaciones sobre conductas aceptables en entornos digitales, garantizando que el sistema propuesto mantenga altos estándares de moderación sin sobrecargar la infraestructura existente.
+\end{itemize}
+
+\subsection{Requisitos Derivados del Proceso de Elicitación:}
+
+\begin{itemize}
+\item Detección de palabras prohibidas: Se concluyó que el sistema debía contar con una lista personalizada de palabras y combinaciones específicas para moderar el contenido de acuerdo con las normativas del juego.
+\item Chequeo de mensajes rápidos y repetidos: La necesidad de evitar spam fue identificada como un punto clave, lo que llevó a la implementación de filtros que identifican patrones de repetición y frecuencia de mensajes.
+\item Chequeo de puntuación y uso de caracteres especiales: Se detectó que el abuso de símbolos y signos de puntuación es una táctica común para evadir la moderación, lo que justificó la implementación de un filtro basado en patrones de puntuación.
+\item Retroalimentación automatizada: El sistema, al estar integrado con la API externa, devolverá los mensajes a la misma tabla utilizada en el proceso principal, indicando el estado (aprobado, bloqueado o sospechoso) y la causa del mismo. Los moderadores, a su vez, podrán revisar los mensajes marcados como sospechosos, sin conocer quién bloqueó o marcó un mensaje, asegurando un proceso imparcial y eficiente.
+\end{itemize}
+
+\section{Conocimiento del Negocio}
+
+El sistema de moderación propuesto será implementado en un juego del género RPG MMO dirigido principalmente a un público juvenil, en su mayoría menores de edad. Debido a la audiencia, las reglas de moderación deben ser estrictas, especialmente en lo que respecta a evitar la difusión de datos personales y el uso de lenguaje vulgar o insultos, dado que la seguridad y el bienestar de los jugadores son prioritarios.
+
+\subsection{Audiencia y Escalabilidad}
+
+El juego tiene una base de usuarios en constante crecimiento, con picos de actividad que coinciden con los horarios de salida escolar en Argentina. Durante los días de semana, el número de usuarios conectados aumenta de forma significativa durante las horas de salida de los turnos de mañana, tarde y jornada completa, lo que genera un incremento sustancial en el tráfico de mensajes de chat en un periodo corto de tiempo.
+
+Los fines de semana y feriados, los patrones de conexión son más homogéneos, con una alta actividad a partir del mediodía, que se mantiene hasta la hora de la cena. Dado el volumen de mensajes que se generan en estos momentos pico, la escalabilidad del sistema de moderación es un factor crítico. El sistema debe ser capaz de procesar miles de mensajes por segundo para garantizar que se mantenga un ambiente seguro y acorde a las normas de conducta del juego, sin afectar la fluidez de la experiencia del usuario.
+
+\subsection{Normas de Conducta}
+
+El sistema de chat del juego sigue reglas estrictas, como prohibir el uso de insultos, lenguaje vulgar, y la difusión de datos personales (como números de teléfono o correos electrónicos). Esto responde a la naturaleza de la audiencia, que está compuesta principalmente por menores de edad, lo que requiere una moderación cuidadosa y activa para proteger la seguridad y privacidad de los jugadores.
+
+Las normas establecen que cualquier mensaje que contenga:
+\begin{itemize}
+\item Lenguaje vulgar, insultos o contenido ofensivo
+\item Información personal (números de teléfono, correos electrónicos, direcciones)
+\item Contenido inapropiado para menores de edad
+\item Spam o publicidad no autorizada
+\item Mensajes repetitivos o enviados en ráfagas excesivamente rápidas
+\end{itemize}
+
+será bloqueado automáticamente por el sistema de moderación.
+
+\subsection{Infraestructura Actual}
+
+Actualmente, el juego ya cuenta con un sistema de moderación mediante una API externa, la cual recibe los mensajes enviados por los jugadores, los procesa, y devuelve una respuesta con el estado del mensaje (aprobado, bloqueado o marcado como sospechoso). 
+
+Este sistema es eficaz, pero el uso frecuente de la API implica costos elevados, por lo que el objetivo del proyecto es desarrollar un filtro preliminar que permita reducir la cantidad de consultas a la API externa, optimizando los recursos de la plataforma.
+
+La infraestructura actual consiste en:
+\begin{itemize}
+\item Una base de datos MySQL que almacena mensajes y su historial de moderación
+\item Un servicio de API externa de machine learning que procesa cada mensaje
+\item Moderadores humanos que revisan manualmente mensajes marcados como sospechosos
+\end{itemize}
+
+\subsection{Justificación Comercial}
+
+El éxito del juego depende en gran medida de la calidad de la experiencia del jugador, y un sistema de moderación eficiente es fundamental para mantener un entorno amigable y seguro. Al implementar un sistema escalonado de moderación que filtra la mayoría de los mensajes localmente, se reducirá la carga sobre la API externa, lo que no solo disminuirá los costos operativos, sino que también garantizará una moderación en tiempo real durante los picos de actividad del juego.
+
+La reducción de costos asociados a la moderación permitirá invertir más recursos en desarrollo de contenido y mejoras del juego, beneficiando tanto a los jugadores como a la sostenibilidad del negocio. Además, un sistema de moderación más rápido y eficiente mejorará la percepción del juego por parte de los jugadores y sus padres, lo cual es crucial para un juego dirigido a menores de edad.
+
+\subsection{Diagrama de Dominio}
+
+El diagrama de dominio muestra las entidades principales del sistema y sus relaciones. Este diagrama fue creado utilizando PlantUML y se encuentra en:
+\texttt{../diagrams/class\_diagram.puml}
+
+La estructura incluye:
+\begin{itemize}
+\item \textbf{Mensaje}: Representa un mensaje de chat con su contenido, estado, fecha y razones de bloqueo
+\item \textbf{EstadoMensaje}: Enum que define los posibles estados (NUEVO, PENDIENTE, BLOQUEADO, APROBADO, etc.)
+\item \textbf{PalabraProhibida}: Entidad que almacena palabras prohibidas y su severidad
+\item \textbf{PalabraPeso}: Entidad que almacena palabras con su peso para el algoritmo de puntuación
+\end{itemize}
+
+\subsection{Procesos de negocio}
+
+\subsubsection{Moderación de Mensajes de Chat}
+
+\paragraph{Roles:}
+
+\begin{itemize}
+\item Usuario: Jugador que envía el mensaje en el chat del juego.
+\item Sistema de Moderación: Procesa el mensaje y lo evalúa utilizando las reglas definidas.
+\item API Externa: Realiza análisis más avanzados en caso de que el sistema local no pueda determinar el estado del mensaje.
+\item Moderador: Revisa los mensajes marcados como sospechosos por la API externa.
+\end{itemize}
+
+\paragraph{Pasos:}
+
+\begin{itemize}
+\item Usuario envía un mensaje en el chat.
+\item Sistema de Moderación recibe el mensaje y aplica chequeos rápidos: uso de mayúsculas, puntuación, regex para detectar correos y números de teléfono.
+\item Si el mensaje pasa estos chequeos, el sistema consulta la Base de Datos para verificar si es un mensaje repetido o enviado en ráfaga.
+\item Si no es repetido ni enviado en ráfaga, se chequean palabras prohibidas y combinaciones sospechosas.
+\item Si no hay problemas, se calcula el peso del mensaje.
+\item Si el mensaje no puede ser categorizado por el sistema local, se envía a la API Externa.
+\item La API Externa devuelve el estado del mensaje: aprobado, bloqueado o sospechoso.
+\item Si es sospechoso, el Moderador revisa el mensaje.
+\item El sistema actualiza la base de datos con el estado final del mensaje.
+\end{itemize}
+
+\paragraph{Diagrama de actividades}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../diagrams/Flujo de Moderación Completo.png}
+\caption{Flujo completo de moderación de mensajes}
+\end{figure}
+
+\subsubsection{Actualización del Diccionario de Moderación}
+
+\paragraph{Roles:}
+
+\begin{itemize}
+\item Administrador: Responsable de actualizar el diccionario de palabras prohibidas, pesos de palabras, y combinaciones sospechosas.
+\end{itemize}
+
+\paragraph{Pasos:}
+
+\begin{itemize}
+\item Administrador accede al sistema de moderación.
+\item Administrador consulta el diccionario actual de palabras prohibidas.
+\item Administrador añade nuevas palabras o elimina las obsoletas.
+\item Administrador ajusta el peso asignado a las palabras en función de nuevas reglas de moderación.
+\item Administrador actualiza las combinaciones de palabras sospechosas.
+\item Sistema de Moderación registra las actualizaciones en la base de datos.
+\item El nuevo diccionario de moderación es aplicado automáticamente en los chequeos de mensajes.
+\end{itemize}
+
+\paragraph{Diagrama de actividades}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../diagrams/CU12 - Actualizar Diccionario de Moderación.png}
+\caption{Diagrama de actividades para actualización del diccionario}
+\end{figure}
+
+\subsection{Diagnostico de proyectos relevados}
+
+\subsubsection{Moderación de Mensajes de Chat}
+
+\paragraph{Problemas:}
+
+\begin{itemize}
+\item Elevado costo operativo: El sistema actual depende de una API externa que utiliza machine learning para moderar mensajes, lo que resulta en costos operativos elevados.
+\item Procesamiento ineficiente en momentos pico: Durante los picos de actividad (por ejemplo, cuando los jugadores salen de la escuela), el sistema puede tener dificultades para procesar el alto volumen de mensajes en tiempo real, causando retrasos en la moderación.
+\item Exceso de consultas a la API externa: Muchos mensajes que podrían ser moderados localmente son enviados a la API externa, lo que incrementa los costos y genera un uso innecesario de los recursos.
+\end{itemize}
+
+\paragraph{Causas:}
+
+\begin{itemize}
+\item Falta de un filtro preliminar eficiente: Actualmente, no existe un sistema local que pueda bloquear mensajes inofensivos, lo que obliga a consultar la API para la mayoría de los mensajes.
+\item Dependencia exclusiva de la API externa: Al no contar con un sistema escalonado, el sistema depende en exceso de la API externa para moderar todos los mensajes, incluso aquellos que podrían ser detectados por reglas simples.
+\item Volumen de jugadores conectados: La gran cantidad de jugadores conectados simultáneamente en momentos pico sobrecarga el sistema, lo que provoca la necesidad de optimización.
+\end{itemize}
+
+\subsubsection{Actualización del Diccionario de Moderación}
+
+\paragraph{Problemas:}
+
+\begin{itemize}
+\item Falta de actualización frecuente: El diccionario de palabras prohibidas y combinaciones sospechosas no se actualiza con suficiente frecuencia, lo que permite que los jugadores encuentren formas de eludir el sistema de moderación.
+\item Falta de flexibilidad en la moderación: El sistema de pesos de palabras no es dinámico, lo que provoca que algunos mensajes que deberían ser moderados no lo sean correctamente, mientras que otros, que no son problemáticos, pueden ser marcados erróneamente.
+\end{itemize}
+
+\paragraph{Causas:}
+
+\begin{itemize}
+\item Proceso de actualización manual: El administrador debe actualizar el diccionario manualmente, lo que retrasa la implementación de nuevas reglas o la adaptación a nuevos comportamientos.
+\item Falta de automatización: La falta de un sistema automatizado para ajustar los pesos de las palabras o las combinaciones sospechosas en función de datos reales dificulta mantener el diccionario actualizado y efectivo.
+\end{itemize}
+
+\section{Requerimientos}
+
+\subsection{Requerimientos funcionales}
+
+\begin{itemize}
+\item \textbf{RF01}: El sistema debe detectar mensajes con exceso de mayúsculas (>50\%).
+\item \textbf{RF02}: El sistema debe detectar mensajes con uso excesivo de puntuación (>20\%).
+\item \textbf{RF03}: El sistema debe detectar direcciones de correo electrónico mediante expresiones regulares.
+\item \textbf{RF04}: El sistema debe detectar números de teléfono mediante expresiones regulares.
+\item \textbf{RF05}: El sistema debe verificar repeticiones de mensajes consultando hashes en la base de datos.
+\item \textbf{RF06}: El sistema debe verificar la velocidad de envío de mensajes por usuario.
+\item \textbf{RF07}: El sistema debe bloquear mensajes que contengan palabras prohibidas.
+\item \textbf{RF08}: El sistema debe detectar combinaciones sospechosas de palabras.
+\item \textbf{RF09}: El sistema debe calcular el peso total del mensaje basado en palabras individuales.
+\item \textbf{RF10}: El sistema debe consultar API externa solo si el mensaje pasa todas las validaciones locales.
+\item \textbf{RF11}: El sistema debe permitir a moderadores humanos aprobar o rechazar mensajes.
+\item \textbf{RF12}: El sistema debe mostrar las razones específicas de bloqueo de cada mensaje.
+\item \textbf{RF13}: El sistema debe permitir actualizar el diccionario de palabras prohibidas.
+\item \textbf{RF14}: El sistema debe permitir revisar y aprobar mensajes marcados como sospechosos.
+\end{itemize}
+
+\subsection{Requerimientos no funcionales}
+
+\begin{itemize}
+\item \textbf{RNF01}: Rendimiento: El sistema debe procesar mensajes en tiempo real (<100ms por mensaje).
+\item \textbf{RNF02}: Escalabilidad: El sistema debe soportar miles de mensajes por segundo durante picos de actividad.
+\item \textbf{RNF03}: Confiabilidad: El sistema debe tener disponibilidad del 99.9\%.
+\item \textbf{RNF04}: Mantenibilidad: El código debe ser modular y documentado siguiendo buenas prácticas.
+\item \textbf{RNF05}: Usabilidad: La interfaz gráfica debe ser intuitiva y fácil de usar para moderadores.
+\item \textbf{RNF06}: Seguridad: Las conexiones a la base de datos deben estar cifradas.
+\item \textbf{RNF07}: Portabilidad: La aplicación debe ejecutarse en cualquier plataforma con JRE 11+.
+\item \textbf{RNF08}: Eficiencia: El sistema debe reducir las consultas a API externa en al menos un 70\%.
+\end{itemize}
+
+\section{Propuesta de Solución}
+
+\subsection{Propuesta Funcional}
+
+\begin{itemize}
+\item Chequeo de Mayúsculas y Puntuación:
+\item El primer paso será verificar si el mensaje contiene un porcentaje excesivo de letras mayúsculas (más del 80%) o un uso desmesurado de signos de puntuación. Estos son indicativos de gritos o comportamientos agresivos y serán marcados localmente por el sistema de moderación en Java.
+\item Chequeo de Correos Electrónicos y Números de Teléfono (Regex):
+\item Usando expresiones regulares (regex), el sistema detectará intentos de compartir correos electrónicos o números de teléfono, los cuales están prohibidos en el chat del juego.
+\item Chequeo de Mensajes Repetidos y Velocidad de Envío:
+\item El sistema verificará si el mensaje es repetido o ha sido enviado en ráfagas por el mismo usuario, consultando una base de datos de hashes de mensajes. Si un mensaje idéntico o similar ha sido enviado recientemente por el mismo usuario, será marcado como spam o sospechoso.
+\item Chequeo de Palabras Prohibidas:
+\item A continuación, el sistema comparará el mensaje con una lista de palabras y expresiones prohibidas, bloqueando aquellos mensajes que contengan términos inapropiados.
+\item Chequeo de Combinaciones Prohibidas:
+\item Se verificarán combinaciones de palabras que, aunque no sean ofensivas individualmente, pueden resultar inapropiadas en conjunto. Estas combinaciones serán definidas por el administrador del sistema y actualizadas periódicamente.
+\item Chequeo del Peso del Mensaje:
+\item Finalmente, el sistema calculará el peso del mensaje basándose en el peso asignado a cada palabra individual. Si el peso total del mensaje supera un umbral predefinido, el mensaje será bloqueado. Este es el chequeo más intensivo, por lo que se realizará en último lugar.
+\end{itemize}
+
+\subsection{Propuesta Técnica}
+
+\begin{itemize}
+\item Java: El código en Java gestionará los chequeos rápidos, como la detección de mayúsculas, signos de puntuación y la aplicación de expresiones regulares para detectar correos electrónicos y números de teléfono. También se encargará de realizar las consultas a la base de datos y de aplicar las reglas de moderación definidas.
+\item MySQL: La base de datos relacional se utilizará para almacenar los hashes de los mensajes procesados. Estos datos permitirán detectar mensajes repetidos o enviados en ráfagas. También se almacenarán las combinaciones prohibidas y los pesos de las palabras.
+\item JDBC (Java Database Connectivity): Se empleará JDBC para conectar la aplicación en Java con la base de datos MySQL. Esta API estándar de Java permitirá ejecutar consultas y gestionar la persistencia de datos.
+\item Expresiones Regulares (Regex): Para detectar correos electrónicos y números de teléfono, se utilizarán expresiones regulares dentro del código Java. Este proceso será rápido y eficiente, evitando consultas adicionales a la base de datos.
+\end{itemize}
+
+\subsubsection{Flujo de Procesamiento:}
+
+\begin{itemize}
+\item El sistema recibe un mensaje enviado por un usuario en el chat del juego.
+\item Aplica primero los chequeos rápidos en Java (mayúsculas, puntuación, regex para emails y teléfonos).
+\item Luego, realiza consultas a la base de datos para verificar si el mensaje es repetido o enviado a alta velocidad.
+\item Si el mensaje no es bloqueado por estos filtros, se verifican las palabras prohibidas, las combinaciones sospechosas y finalmente el peso del mensaje.
+\item Los mensajes que no puedan ser claramente clasificados se envían a la API externa para un análisis más avanzado.
+\end{itemize}
+
+\section{Analisis}
+
+\subsection{Casos de uso}
+
+\subsubsection{Diagrama de caso de uso}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../diagrams/Use Case Diagram - Sistema de Moderación Escalonada.png}
+\caption{Diagrama de casos de uso del sistema de moderación}
+\end{figure}
+
+Los casos de uso principales incluyen:
+\begin{itemize}
+\item Enviar mensaje de chat
+\item Filtrar mensajes con mayúsculas excesivas
+\item Detectar correos electrónicos y números de teléfono
+\item Verificar repeticiones y velocidad de envío
+\item Bloquear palabras prohibidas
+\item Calcular peso de mensajes
+\item Consultar API externa (opcional)
+\item Actualizar diccionario de moderación
+\item Revisar mensajes sospechosos
+\end{itemize}
+
+\subsubsection{Identificación de Actores}
+
+\paragraph{Administrador:}
+
+Responsable de configurar y mantener el diccionario de moderación, incluyendo palabras prohibidas y pesos de palabras. Tiene acceso completo al sistema de gestión de reglas para adaptar el sistema a nuevos comportamientos de los usuarios.
+
+\paragraph{Moderador:}
+
+Usuario humano que revisa mensajes marcados como sospechosos por el sistema automático. Toma decisiones finales sobre aprobar o rechazar mensajes, basándose en la información proporcionada por el sistema de validación.
+
+\paragraph{API Externa (Opcional):}
+
+Sistema externo de machine learning que puede ser consultado para casos complejos que no pueden ser determinados por las validaciones locales. Esta API devuelve estados: aprobado, bloqueado, o sospechoso, y solo se utiliza cuando el sistema local no puede categorizar el mensaje.
+
+\subsubsection{Trazabilidad}
+
+La trazabilidad de los casos de uso se establece relacionando cada caso de uso con los requerimientos funcionales correspondientes:
+
+\begin{longtable}{|p{2cm}|p{8cm}|p{2cm}|}
+\hline
+\textbf{Caso de Uso} & \textbf{Descripción} & \textbf{Requerimientos} \\ \hline
+CU01 & Enviar Mensaje de Chat & RF11 \\ \hline
+CU02 & Filtrar Mensaje con Mayúsculas & RF01 \\ \hline
+CU03 & Filtrar Mensaje con Exceso de Puntuación & RF02 \\ \hline
+CU04 & Detectar Correos Electrónicos & RF03 \\ \hline
+CU05 & Detectar Números de Teléfono & RF04 \\ \hline
+CU06 & Verificar Repetición de Mensajes & RF05 \\ \hline
+CU07 & Verificar Velocidad de Envío & RF06 \\ \hline
+CU08 & Bloquear Palabras Prohibidas & RF07 \\ \hline
+CU09 & Detectar Combinaciones Sospechosas & RF08 \\ \hline
+CU10 & Calcular Peso de Mensajes & RF09 \\ \hline
+CU11 & Consultar API Externa & RF10 \\ \hline
+CU12 & Actualizar Diccionario de Moderación & RF13 \\ \hline
+CU13 & Revisar Mensajes Sospechosos & RF14 \\ \hline
+\end{longtable}
+
+\subsubsection{Descripción de casos de uso}
+
+\paragraph{CU01: Enviar Mensaje de Chat}
+
+\begin{itemize}
+\item Actores: Usuario (Jugador)
+\item Referencias: RFS11
+\item Descripción: El jugador envía un mensaje a través del chat del juego, el cual será procesado por el sistema de moderación.
+\item Precondición: El jugador debe estar conectado al juego y tener acceso al sistema de chat.
+\item Flujo Principal:
+\item El jugador redacta un mensaje en la interfaz del chat.
+\item El jugador envía el mensaje.
+\item El sistema recibe el mensaje y lo pasa al proceso de moderación.
+\item El mensaje pasa por el sistema de moderación para ser evaluado.
+\item Si el mensaje es aprobado, se envía a los otros jugadores.
+\item Postcondición: El mensaje se publica en el chat si es aprobado.
+\item Flujo Alternativo:
+\item Si el mensaje es bloqueado, el jugador no recibe confirmación y el mensaje no es publicado.
+\item Excepciones:
+\item Si el jugador no está conectado, el sistema no acepta el mensaje.
+\item Si el sistema de chat está caído, el jugador recibe un mensaje de error.
+\end{itemize}
+
+\paragraph{CU02: Filtrar Mensaje con Mayúsculas}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS01
+\item Descripción: El sistema verifica si el mensaje contiene un porcentaje elevado de letras mayúsculas y lo bloquea si supera el umbral.
+\item Precondición: El mensaje debe ser enviado por un jugador y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema calcula el porcentaje de letras mayúsculas en el mensaje.
+\item Si el porcentaje es mayor al 80%, el mensaje es marcado como inapropiado.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si el mensaje tiene menos del 80% de mayúsculas, se pasa al siguiente chequeo.
+\item Excepciones: No aplica.
+\end{itemize}
+
+\paragraph{CU03: Filtrar Mensaje con Exceso de Puntuación}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS02
+\item Descripción: El sistema filtra los mensajes que contienen un exceso de signos de puntuación o caracteres especiales, considerándolos como sospechosos o spam.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema analiza la cantidad de signos de puntuación y caracteres especiales en el mensaje.
+\item Si el mensaje excede el umbral de puntuación permitido, es marcado como inapropiado.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si el mensaje no supera el límite de puntuación, se pasa al siguiente chequeo.
+\item Excepciones: No aplica.
+\end{itemize}
+
+\paragraph{CU04: Detectar Correos Electrónicos}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS03
+\item Descripción: El sistema detecta y bloquea mensajes que contengan direcciones de correo electrónico, que están prohibidos en el chat del juego.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema ejecuta una expresión regular (regex) para identificar correos electrónicos en el mensaje.
+\item Si se detecta un correo electrónico, el mensaje es marcado como inapropiado.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si no se detecta un correo electrónico, el mensaje pasa al siguiente chequeo.
+\item Excepciones: No aplica.
+\end{itemize}
+
+\paragraph{CU05: Detectar Números de Teléfono}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS04
+\item Descripción: El sistema detecta y bloquea mensajes que contengan números de teléfono, ya que compartir este tipo de información está prohibido en el chat del juego.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema ejecuta una expresión regular (regex) para identificar números de teléfono en el mensaje.
+\item Si se detecta un número de teléfono, el mensaje es marcado como inapropiado.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si no se detecta un número de teléfono, el mensaje pasa al siguiente chequeo.
+\item Excepciones: No aplica.
+\end{itemize}
+
+\paragraph{CU06: Verificar Repetición de Mensajes}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS05
+\item Descripción: El sistema verifica si un mensaje ha sido enviado repetidamente por el mismo usuario en un corto periodo de tiempo.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema genera un hash del mensaje.
+\item El sistema consulta la base de datos para verificar si un mensaje con el mismo hash ha sido enviado por el mismo usuario recientemente.
+\item Si se detecta repetición, el mensaje es marcado como spam.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si no se detecta repetición, el mensaje pasa al siguiente chequeo.
+\item Excepciones:
+\item Si el sistema no puede acceder a la base de datos, el mensaje es procesado sin verificar la repetición.
+\end{itemize}
+
+\paragraph{CU07: Verificar Velocidad de Envío}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS06
+\item Descripción: El sistema verifica si los mensajes enviados por el mismo usuario son enviados a una velocidad inusualmente alta, lo que indica comportamiento de spam o automatización.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema verifica el historial reciente de mensajes enviados por el mismo usuario.
+\item El sistema evalúa el intervalo de tiempo entre el mensaje actual y los anteriores.
+\item Si el intervalo de tiempo es muy corto (ráfagas de mensajes), el mensaje es marcado como spam.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si el intervalo de tiempo es adecuado, el mensaje pasa al siguiente chequeo.
+\item Excepciones:
+\item Si el sistema no puede acceder al historial de mensajes, el mensaje es procesado sin verificación de velocidad.
+\end{itemize}
+
+\paragraph{CU08: Bloquear Palabras Prohibidas}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS07
+\item Descripción: El sistema filtra mensajes que contengan palabras prohibidas, comparándolos con una lista predefinida de términos no permitidos.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema compara el mensaje con una lista de palabras prohibidas.
+\item Si el mensaje contiene una palabra prohibida, es marcado como inapropiado.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si no se detecta una palabra prohibida, el mensaje pasa al siguiente chequeo.
+\item Excepciones: No aplica.
+\end{itemize}
+
+\paragraph{CU09: Detectar Combinaciones Sospechosas}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS08
+\item Descripción: El sistema detecta combinaciones específicas de palabras que, juntas, pueden ser inapropiadas, incluso si las palabras individuales no están prohibidas.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema analiza el mensaje en busca de combinaciones sospechosas de palabras.
+\item Si se detecta una combinación sospechosa, el mensaje es marcado como inapropiado.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si no se detectan combinaciones sospechosas, el mensaje pasa al siguiente chequeo.
+\item Excepciones: No aplica.
+\end{itemize}
+
+\paragraph{CU10: Calcular Peso de Mensajes}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación
+\item Referencias: RFS09
+\item Descripción: El sistema calcula el peso total del mensaje basado en los pesos asignados a las palabras individuales que contiene. Si el peso total supera un umbral predefinido, el mensaje es bloqueado.
+\item Precondición: El mensaje debe ser enviado y recibido por el sistema de moderación.
+\item Flujo Principal:
+\item El sistema de moderación recibe el mensaje.
+\item El sistema analiza cada palabra del mensaje y le asigna un peso basado en reglas predefinidas.
+\item El sistema suma los pesos de todas las palabras.
+\item Si el peso total supera el umbral permitido, el mensaje es marcado como inapropiado.
+\item El sistema bloquea el mensaje.
+\item Postcondición: El mensaje es bloqueado y no se publica en el chat.
+\item Flujo Alternativo:
+\item Si el peso del mensaje no supera el umbral, el mensaje es aprobado.
+\item Excepciones: No aplica.
+\end{itemize}
+
+\paragraph{CU11: Consultar API Externa}
+
+\begin{itemize}
+\item Actores: Sistema de Moderación, API Externa
+\item Referencias: RFS10
+\item Descripción: El sistema consulta la API externa cuando no puede categorizar un mensaje localmente, solicitando un análisis más avanzado para determinar si el mensaje es inapropiado.
+\item Precondición: El mensaje debe haber pasado los chequeos locales sin ser categorizado (ni aprobado ni bloqueado).
+\item Flujo Principal:
+\item El sistema de moderación detecta que el mensaje no puede ser categorizado localmente.
+\item El sistema envía el mensaje a la API externa para su análisis.
+\item La API externa evalúa el mensaje usando machine learning y devuelve uno de los siguientes estados: aprobado, bloqueado o sospechoso.
+\item El sistema recibe el resultado de la API externa.
+\item Si el mensaje es aprobado, se publica en el chat. Si es bloqueado, no se publica.
+\item Si el mensaje es marcado como sospechoso, se envía a un moderador para revisión.
+\item Postcondición: El mensaje es aprobado, bloqueado, o enviado para revisión manual.
+\item Flujo Alternativo:
+\item Si el mensaje es marcado como sospechoso, se envía para revisión manual por un moderador.
+\item Excepciones:
+\item Si la API externa no responde, el sistema almacena el mensaje para reintentar o marca el mensaje como sospechoso por defecto.
+\end{itemize}
+
+\paragraph{CU12: Actualizar Diccionario de Moderación}
+
+\begin{itemize}
+\item Actores: Administrador
+\item Referencias: RFS13
+\item Descripción: El administrador actualiza el diccionario de palabras prohibidas, combinaciones sospechosas, y pesos de palabras.
+\item Precondición: El administrador debe tener acceso al sistema de gestión de reglas.
+\item Flujo Principal:
+\item El administrador accede al sistema de gestión de moderación.
+\item El administrador selecciona la opción para actualizar el diccionario de palabras.
+\item El administrador añade nuevas palabras prohibidas, modifica los pesos o combina nuevas reglas.
+\item El sistema guarda las actualizaciones.
+\item Postcondición: El diccionario de moderación es actualizado y aplicado en los próximos mensajes procesados.
+\item Flujo Alternativo:
+\item El administrador puede eliminar palabras obsoletas o modificar las combinaciones sospechosas existentes.
+\item Excepciones:
+\item Si el sistema no guarda correctamente los cambios, el administrador recibe un mensaje de error.
+\end{itemize}
+
+\paragraph{CU13: Revisar Mensajes Sospechosos}
+
+\begin{itemize}
+\item Actores: Moderador
+\item Referencias: RFS14
+\item Descripción: El moderador revisa manualmente los mensajes marcados como sospechosos por la API externa.
+\item Precondición: El moderador debe tener acceso al sistema de revisión de mensajes.
+\item Flujo Principal:
+\item El sistema notifica al moderador que hay mensajes sospechosos pendientes de revisión.
+\item El moderador accede al sistema de revisión de mensajes.
+\item El moderador revisa el contenido del mensaje marcado como sospechoso.
+\item El moderador decide si aprueba o bloquea el mensaje.
+\item El sistema actualiza el estado del mensaje según la decisión del moderador.
+\item Postcondición: El mensaje es aprobado o bloqueado.
+\item Flujo Alternativo:
+\item El moderador puede marcar el mensaje para una revisión adicional si no puede tomar una decisión inmediata.
+\item Excepciones:
+\item Si el sistema de moderación no está disponible, el moderador no podrá revisar los mensajes.
+\end{itemize}
+
+\subsection{Diagramas de secuencia}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{../diagrams/CU02 - Filtrar Mensaje con Mayúsculas.png}
+\caption{Diagrama de secuencia: Filtrar mensaje con mayúsculas}
+\end{figure}
+
+\section{Etapa de diseño}
+
+\begin{itemize}
+\item Clases de Moderación: Encargadas de aplicar las reglas escalonadas de chequeo (mayúsculas, puntuación, palabras prohibidas, etc.).
+\item Clases DAO: Manejarán la persistencia de los datos, conectándose a la base de datos para consultar y actualizar información relevante para la moderación.
+\item Relaciones entre Clases: Se definirán las relaciones de dependencia y asociación entre las distintas clases del sistema, asegurando un diseño cohesivo y modular.
+\end{itemize}
+
+\subsection{Diagrama de clases}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{../diagrams/Class Diagram - Sistema de Moderación.png}
+\caption{Diagrama de clases del sistema de moderación}
+\end{figure}
+
+\section{Etapa de implementación}
+
+\subsection{Diagrama de Despliegue}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../diagrams/Deployment Diagram - Sistema de Moderación.png}
+\caption{Diagrama de despliegue del sistema}
+\end{figure}
+
+\subsection{Diagrama de componentes}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../diagrams/Component Diagram - Sistema de Moderación.png}
+\caption{Diagrama de componentes del sistema}
+\end{figure}
+
+\section{Etapa de pruebas}
+
+\subsection{Caso de prueba PRU-CU02}
+
+\subsubsection{Precondiciones:}
+
+\begin{itemize}
+\item Comprobación de las pruebas PRU-CU01, PRU-CU03.
+\item El sistema de moderación escalonada debe estar configurado y operativo.
+\item El umbral de validación para el exceso de mayúsculas debe estar configurado en 80%.
+\item Deben existir mensajes que contengan diferentes proporciones de mayúsculas.
+\end{itemize}
+
+\subsubsection{Pasos:}
+
+\begin{itemize}
+\item Enviar un mensaje con el 100% de caracteres en mayúsculas.
+\item Enviar un mensaje con menos del 80% de caracteres en mayúsculas.
+\item Enviar un mensaje con exactamente el 80% de mayúsculas.
+\item Enviar un mensaje con un 85% de caracteres en mayúsculas.
+\end{itemize}
+
+\subsubsection{Resultado Esperado:}
+
+\begin{itemize}
+\item El sistema debe bloquear los mensajes que contienen más del 80% de mayúsculas (1 y 4).
+\item El sistema debe aprobar los mensajes que contienen menos o exactamente el 80% de mayúsculas (2 y 3).
+\end{itemize}
+
+\subsubsection{Procedimiento de Prueba}
+
+\begin{itemize}
+\item Comprobar las precondiciones asegurando que el sistema de moderación está configurado correctamente.
+\item Enviar un mensaje con el 100% de caracteres en mayúsculas (Ejemplo: "ESTO ES UN MENSAJE COMPLETAMENTE EN MAYÚSCULAS").
+\item Verificar que el sistema bloquea este mensaje y guarda la razón del bloqueo: "exceso de mayúsculas".
+\item Enviar un mensaje con un 50% de caracteres en mayúsculas (Ejemplo: "Esto ES un Mensaje con Algo de Mayúsculas").
+\item Verificar que el sistema aprueba este mensaje y no lo bloquea.
+\item Enviar un mensaje con exactamente el 80% de caracteres en mayúsculas (Ejemplo: "ESTO Es Un Mensaje CON 80% MAYÚSCULAS").
+\item Verificar que el sistema aprueba este mensaje.
+\item Enviar un mensaje con un 85% de caracteres en mayúsculas (Ejemplo: "ESTE MENSAJE TIENE MÁS DEL 80% EN MAYÚSCULAS").
+\item Verificar que el sistema bloquea este mensaje y guarda la razón del bloqueo: "exceso de mayúsculas".
+\end{itemize}
+
+\subsubsection{Componente de Prueba}
+
+\begin{itemize}
+\item Componente: Sistema de Moderación Escalonada - Filtro de Mayúsculas.
+\item Objetivo: Verificar que el sistema bloquee correctamente los mensajes que contienen más del 80% de mayúsculas.
+\item Entradas: Mensajes de chat con distintos porcentajes de mayúsculas.
+\item Salidas: Mensajes bloqueados por exceso de mayúsculas y el registro de la razón de bloqueo en el sistema.
+\end{itemize}
+
+\section{Desarrollo en Java}
+
+\subsection{Arquitectura del Sistema}
+
+La aplicación fue desarrollada como un sistema de moderación para manejar el flujo y control de mensajes en línea. El sistema implementa un enfoque modular donde cada componente cumple una responsabilidad específica dentro del proceso de moderación.
+
+\subsection{Estructura de Clases Principales}
+
+El sistema está organizado en tres capas principales: capa de presentación, capa de lógica de negocio y capa de acceso a datos.
+
+\subsubsection{Capa de Presentación}
+
+\textbf{VentanaAdmin.java}: Clase principal de la interfaz gráfica desarrollada con Java Swing. Esta ventana proporciona una interfaz intuitiva para moderadores donde pueden:
+\begin{itemize}
+\item Visualizar mensajes pendientes en una lista interactiva
+\item Revisar el contenido completo del mensaje seleccionado
+\item Consultar las razones específicas de bloqueo
+\item Aprobar o rechazar mensajes manualmente
+\item Ejecutar validación automática sobre mensajes individuales
+\end{itemize}
+
+La interfaz implementa un \texttt{JList} personalizado con renderer que colorea los mensajes según su estado (bloqueados en rojo, sospechosos en amarillo, aprobados en verde).
+
+\subsubsection{Capa de Lógica de Negocio}
+
+\textbf{ServicioValidacion.java}: Servicio central que implementa las validaciones automáticas utilizando múltiples algoritmos:
+
+\begin{itemize}
+\item \textbf{Validación de Palabras Prohibidas}: Consulta la base de datos para identificar palabras prohibidas en el contenido
+\item \textbf{Validación de Mayúsculas}: Detecta mensajes con más del 50\% de caracteres en mayúsculas
+\item \textbf{Validación de Correos Electrónicos}: Utiliza expresiones regulares para detectar direcciones de correo
+\item \textbf{Validación de Teléfonos}: Detecta números de teléfono mediante patrones regex
+\item \textbf{Validación de Puntuación}: Identifica uso excesivo de signos de puntuación (>20\%)
+\item \textbf{Cálculo de Peso}: Implementa algoritmo escalado que combina pesos de palabras con factor de contexto
+\item \textbf{Detecta Repeticiones}: Identifica caracteres o palabras repetidas excesivamente
+\item \textbf{Validación de Velocidad}: Verifica si el mensaje fue enviado demasiado rápido (posible spam)
+\end{itemize}
+
+El método \texttt{validarMensaje()} retorna una lista de razones de bloqueo, mientras que \texttt{determinarEstado()} clasifica el mensaje como PENDIENTE, SOSPECHOSO o BLOQUEADO según la cantidad y severidad de las validaciones que fallaron.
+
+\subsubsection{Capa de Acceso a Datos}
+
+\textbf{MensajeDAO.java}: Implementa el patrón Data Access Object para la gestión de mensajes. Proporciona métodos para:
+\begin{itemize}
+\item Obtener mensajes pendientes de moderación
+\item Consultar últimos mensajes de un usuario para análisis de comportamiento
+\item Aprobar o rechazar mensajes
+\end{itemize}
+
+\textbf{PalabraProhibidaDAO.java}: Gestiona el acceso a palabras prohibidas almacenadas en la base de datos con operaciones para:
+\begin{itemize}
+\item Buscar palabras prohibidas en un texto
+\item Verificar si un contenido contiene palabras prohibidas
+\item Obtener la primera palabra prohibida encontrada
+\end{itemize}
+
+\textbf{PalabraPesoDAO.java}: Gestiona las palabras con peso para el algoritmo de puntuación, permitiendo:
+\begin{itemize}
+\item Obtener el peso de una palabra específica
+\item Obtener todas las palabras con peso ordenadas por importancia
+\item Obtener peso con valor por defecto si la palabra no existe
+\end{itemize}
+
+\subsection{Patrones de Diseño Utilizados}
+
+\subsubsection{Data Access Object (DAO)}
+
+El sistema utiliza ampliamente el patrón DAO para abstraer y encapsular el acceso a datos. Cada tabla principal tiene su propio DAO que implementa:
+
+\begin{itemize}
+\item Configuración centralizada de conexión a base de datos
+\item Operaciones CRUD específicas para cada entidad
+\item Manejo robusto de excepciones SQL
+\item Uso de try-with-resources para gestión automática de conexiones
+\item Consultas preparadas (PreparedStatement) para prevenir inyección SQL
+\end{itemize}
+
+\subsubsection{Pattern Matching con Expresiones Regulares}
+
+Para detección de patrones sospechosos, el sistema implementa expresiones regulares compiladas:
+
+\begin{lstlisting}[language=Java, caption=Patrones de detección en ServicioValidacion]
+private static final Pattern EMAIL_PATTERN = Pattern.compile(
+    "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+);
+
+private static final Pattern TELEFONO_PATTERN = Pattern.compile(
+    "\\b(\\+?\\d{1,3}[-.\\s]?)?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}\\b"
+);
+\end{lstlisting}
+
+\subsubsection{Strategy Pattern en Validaciones}
+
+Aunque no implementado explícitamente como interfaces, el diseño de validaciones sigue el patrón Strategy, donde cada tipo de validación es una estrategia independiente que puede ser aplicada o no al mensaje.
+
+\subsection{Algoritmo de Validación Escalonada}
+
+El sistema implementa un algoritmo de validación escalonada donde las validaciones se ejecutan en orden de velocidad y especificidad:
+
+\begin{enumerate}
+\item \textbf{Palabras Prohibidas} (consulta SQL): Bloqueo inmediato si se detecta
+\item \textbf{Mayúsculas y Puntuación} (operaciones locales): Evaluación rápida sin consultas a BD
+\item \textbf{Expresiones Regulares} (email, teléfono): Detección de datos personales
+\item \textbf{Cálculo de Peso} (algoritmo complejo): Análisis profundo del contenido
+\item \textbf{Repeticiones y Velocidad} (análisis de historial): Detección de spam
+\end{enumerate}
+
+Si alguna validación falla, se detiene la evaluación y el mensaje se marca con el estado apropiado (BLOQUEADO, SOSPECHOSO o PENDIENTE).
+
+\subsection{Modelo de Dominio}
+
+\textbf{Mensaje.java}: Clase de dominio que representa un mensaje en el sistema con los siguientes atributos:
+
+\begin{itemize}
+\item \texttt{id}: Identificador único del mensaje
+\item \texttt{contenido}: Texto del mensaje
+\item \texttt{estado}: Estado actual (NUEVO, PENDIENTE, BLOQUEADO, APROBADO, RECHAZADO, SOSPECHOSO)
+\item \texttt{fechaCreacion}: Timestamp de creación del mensaje
+\item \texttt{usuarioId}: Identificador del usuario que envió el mensaje
+\item \texttt{razonesBloqueo}: Lista de razones específicas por las que fue bloqueado
+\end{itemize}
+
+\textbf{EstadoMensaje.java}: Enum que define los estados posibles del mensaje, proporcionando una descripción legible para cada estado.
+
+\textbf{PalabraProhibida.java} y \textbf{PalabraPeso.java}: Clases de dominio que representan las reglas de moderación almacenadas en la base de datos.
+
+\subsection{Interfaz de Usuario}
+
+La interfaz gráfica desarrollada con Java Swing implementa:
+
+\begin{itemize}
+\item \textbf{JList con renderer personalizado}: Permite visualizar mensajes con colores según estado
+\item \textbf{JTextArea} para mostrar contenido completo y razones de bloqueo
+\item \textbf{JSplitPane} para dividir la ventana en lista y detalles
+\item \textbf{Botones de acción} con iconos y colores distintivos
+\item \textbf{Mensajes de confirmación} usando JOptionPane
+\item \textbf{Gestión de eventos} mediante ActionListener y ListSelectionListener
+\end{itemize}
+
+El patrón de diseño utilizado para la interfaz es \textbf{Model-View-Controller (MVC)} implícito:
+\begin{itemize}
+\item \textbf{Modelo}: Mensaje, EstadoMensaje, etc.
+\item \textbf{Vista}: Componentes Swing de VentanaAdmin
+\item \textbf{Controlador}: ActionListeners y ListSelectionListeners
+\end{itemize}
+
+\subsection{Gestión de Persistencia}
+
+El sistema utiliza JDBC para la persistencia de datos con las siguientes características:
+
+\begin{itemize}
+\item Conexión directa mediante \texttt{DriverManager.getConnection()}
+\item Configuración centralizada de URL, usuario y contraseña en cada DAO
+\item Uso de PreparedStatement para prevenir inyección SQL
+\item Try-with-resources para cierre automático de conexiones
+\item Manejo de excepciones con logging y stack trace
+\end{itemize}
+
+La configuración de conexión apunta a:
+\begin{itemize}
+\item Base de datos: \texttt{moderacion\_db}
+\item Host: \texttt{localhost:3306}
+\item Usuario: \texttt{moderacion\_user}
+\item Contraseña: \texttt{moderacion\_pass}
+\end{itemize}
+
+\subsection{Código Fuente y Repositorio}
+
+El código fuente del sistema está disponible en el repositorio de GitHub:
+
+\textbf{Repositorio:} \texttt{https://github.com/eduardo-bayot/s21-seminario-practica-informatica}
+
+\textbf{Stack Tecnológico:}
+
+\begin{itemize}
+\item \textbf{Java 11+}: Lenguaje de programación principal
+\item \textbf{Java Swing}: Framework para la interfaz gráfica de usuario
+\item \textbf{MySQL 8.0+}: Sistema de gestión de bases de datos relacionales
+\item \textbf{JDBC}: API para conectividad con bases de datos MySQL
+\item \textbf{Docker}: Contenedorización de la base de datos para facilitar el despliegue
+\end{itemize}
+
+\section{Base de Datos}
+
+\subsection{Diagrama Entidad-Relación}
+
+El diagrama entidad-relación de la base de datos muestra las tablas principales:
+\begin{itemize}
+\item \textbf{mensajes}: Almacena los mensajes con su contenido, estado, fechas y razones de bloqueo
+\item \textbf{palabras\_prohibidas}: Lista de palabras prohibidas con su nivel de severidad
+\item \textbf{palabras\_peso}: Palabras con su peso para el algoritmo de puntuación
+\item \textbf{usuarios}: Información de los usuarios del sistema
+\item \textbf{moderacion}: Historial de moderaciones realizadas
+\end{itemize}
+
+Las relaciones principales son:
+\begin{itemize}
+\item mensajes tiene una clave foránea a usuarios (usuario\_id)
+\item moderacion tiene una clave foránea a mensajes (mensaje\_id)
+\item Las palabras prohibidas y con peso son consultadas para validar mensajes
+\end{itemize}
+
+\subsection{Scripts SQL}
+
+Los scripts de creación de la base de datos se encuentran en el directorio raíz:
+\begin{itemize}
+\item \texttt{database\_actualizado.sql} - Script completo de creación y datos de ejemplo
+\item \texttt{script\_insertar\_palabras.sql} - Script adicional para insertar palabras de moderación
+\end{itemize}
+
+La base de datos \texttt{moderacion\_db} se encuentra implementada y alojada en el repositorio de GitHub junto con scripts SQL para su creación y población con datos de ejemplo.
+
+\section{Inserción, consulta y borrado de registros}
+
+\subsection{Insercion}
+
+La inserción de mensajes se realiza automáticamente por la aplicación cuando:
+\begin{itemize}
+\item El usuario envía un mensaje en el chat del juego
+\item El sistema de validación necesita almacenar resultados de moderación
+\item Los moderadores aprueban o rechazan mensajes manualmente
+\end{itemize}
+
+\subsection{Consultas}
+
+Las consultas principales del sistema incluyen:
+\begin{itemize}
+\item Obtener mensajes pendientes de moderación
+\item Buscar palabras prohibidas en el contenido
+\item Consultar pesos de palabras para el algoritmo
+\item Verificar historial de mensajes de un usuario
+\item Calcular estadísticas de moderación
+\end{itemize}
+
+\subsubsection{Consultas de ejemplo}
+
+Consultas SQL de ejemplo están disponibles en los archivos CSV en el directorio raíz:
+\begin{itemize}
+\item \texttt{query1.csv} - Consulta de mensajes pendientes
+\item \texttt{query2.csv} - Estadísticas de moderación
+\item \texttt{query3.csv} - Mensajes bloqueados por razón
+\end{itemize}
+
+\section{Definiciones de Comunicación}
+
+\subsection{1. Comunicación Interna}
+
+\begin{itemize}
+\item La comunicación interna entre los diferentes módulos del sistema de moderación (clases de validación y el sistema de moderación general) se realiza mediante llamadas de función síncronas en el entorno de ejecución de Java.
+\item Las clases de validación (ModeracionMayusculas, ModeracionPuntuacion, etc.) son invocadas secuencialmente por el Sistema de Moderación General, que utiliza estos módulos para aplicar las reglas definidas a los mensajes.
+\item No hay necesidad de mecanismos de comunicación asíncrona o red en esta fase, ya que todas las operaciones internas se realizan dentro del mismo entorno de ejecución.
+\end{itemize}
+
+\subsection{2. Comunicación con la Base de Datos}
+
+\begin{itemize}
+\item La persistencia de los mensajes, su estado y las moderaciones aplicadas se realiza utilizando una conexión JDBC (Java Database Connectivity) hacia una base de datos relacional MySQL.
+\item El sistema de moderación escalonada interactúa con la base de datos mediante sentencias SQL, tanto para consultas como para inserciones y actualizaciones.
+\item Protocolo: Se utiliza el protocolo TCP/IP para la comunicación con la base de datos MySQL, garantizando que las conexiones sean seguras y rápidas.
+\item Puerto predeterminado: La base de datos escucha en el puerto 3306, el puerto predeterminado para MySQL.
+\item Manejo de Conexiones: El sistema utiliza un pool de conexiones JDBC para optimizar el uso de conexiones a la base de datos, minimizando la latencia y maximizando la eficiencia en las consultas y escrituras.
+\end{itemize}
+
+\subsection{3. Comunicación con la API Externa}
+
+\begin{itemize}
+\item En el último paso de la moderación, si ninguna regla local bloquea el mensaje, el sistema envía el mensaje a una API externa de machine learning para realizar una moderación avanzada.
+\item Protocolo de comunicación: La comunicación con la API externa se realiza mediante HTTP/HTTPS.
+\item Formato de datos: Los mensajes y las respuestas entre el sistema de moderación y la API externa se intercambian en formato JSON, asegurando que los datos sean fáciles de procesar y transmitir.
+\item Autenticación: Se utiliza tokens de autenticación (como OAuth o JWT) para asegurar que solo usuarios autorizados puedan acceder a la API.
+\item Método de comunicación: El sistema realiza peticiones HTTP POST al endpoint de la API, enviando el mensaje para análisis y recibiendo una respuesta que contiene el estado del mensaje (bloqueado, aprobado o sospechoso).
+\item Gestión de errores: El sistema está preparado para manejar fallos en la conexión con la API externa. Si una petición falla (por ejemplo, debido a problemas de red o tiempo de espera), el sistema marca el mensaje como "pendiente de revisión" para ser tratado posteriormente.
+\end{itemize}
+
+\subsection{4. Entorno de Red}
+
+\begin{itemize}
+\item El servidor de aplicación donde se ejecuta el sistema de moderación escalonada está alojado en un entorno controlado con acceso restringido a la base de datos y la API externa.
+\item Las comunicaciones entre el sistema y la base de datos se realizan dentro de la misma red o mediante una VPN segura para proteger los datos sensibles.
+\item La comunicación con la API externa se realiza a través de HTTPS, garantizando que los datos estén cifrados durante su transmisión.
+\end{itemize}
+
+\subsection{5. Seguridad de las Comunicaciones}
+
+\begin{itemize}
+\item Todas las conexiones a la base de datos y a la API externa están cifradas mediante SSL/TLS para asegurar la privacidad e integridad de los datos durante la transmisión.
+\item Se implementan firewalls para controlar y restringir el acceso al servidor de base de datos, permitiendo solo conexiones desde el servidor de aplicación.
+\item El sistema cuenta con logs de auditoría que registran todas las conexiones y transacciones realizadas, lo que permite rastrear el acceso y uso de los datos.
+\end{itemize}
+
+\section{Conclusiones}
+
+Este documento ha presentado el análisis y diseño completo de un sistema de moderación escalonada implementado como aplicación de escritorio en Java Swing. El sistema reduce significativamente los costos operativos mediante validaciones locales eficientes antes de escalar a herramientas más avanzadas.
+
+\subsection{Logros Alcanzados}
+
+\begin{itemize}
+\item Diseño de un sistema escalonado de validación que puede bloquear automáticamente la mayoría de mensajes inapropiados
+\item Implementación de una interfaz gráfica intuitiva para moderadores
+\item Integración eficiente con base de datos MySQL para persistencia de datos
+\item Reducción estimada del 70\% en consultas a API externa
+\item Documentación completa de casos de uso, clases y flujos del sistema
+\end{itemize}
+
+\subsection{Tecnologías Utilizadas}
+
+El sistema utiliza tecnologías probadas y confiables:
+\begin{itemize}
+\item Java 11+ para la aplicación de escritorio
+\item Java Swing para la interfaz de usuario
+\item MySQL como base de datos relacional
+\item JDBC para conectividad con la base de datos
+\item PlantUML para documentación de diagramas
+\end{itemize}
+
+\subsection{Trabajo Futuro}
+
+Mejoras potenciales incluyen:
+\begin{itemize}
+\item Integración con una API externa de machine learning para casos complejos
+\item Implementación de aprendizaje automático para ajustar pesos de palabras automáticamente
+\item Dashboard de estadísticas de moderación
+\item Sistema de notificaciones para moderadores
+\item Soporte para múltiples idiomas
+\end{itemize}
+
+\newpage
+\appendix
+
+\section{Código PlantUML de los Diagramas}
+
+Los archivos fuente en PlantUML están disponibles en el directorio \texttt{../diagrams/} del repositorio de GitHub. Los archivos incluyen:
+
+\begin{itemize}
+\item \texttt{use\_case\_diagram.puml} - Diagrama de Casos de Uso
+\item \texttt{class\_diagram.puml} - Diagrama de Clases  
+\item \texttt{sequence\_cu02.puml} - Diagrama de Secuencia: Filtrar Mensaje con Mayúsculas
+\item \texttt{sequence\_moderacion\_completa.puml} - Diagrama de Secuencia: Flujo Completo
+\item \texttt{sequence\_cu12.puml} - Diagrama de Secuencia: Actualizar Diccionario
+\item \texttt{component\_diagram.puml} - Diagrama de Componentes
+\item \texttt{deployment\_diagram.puml} - Diagrama de Despliegue
+\end{itemize}
+
+Para generar las imágenes PNG desde los archivos PlantUML, se puede usar el comando:
+
+\begin{lstlisting}[language=bash]
+plantuml ../diagrams/*.puml
+\end{lstlisting}
+
+\section{Código SQL de la Base de Datos}
+
+El script completo de creación de la base de datos está disponible en \texttt{database\_actualizado.sql}. A continuación se muestra un resumen de las tablas principales:
+
+\subsection{Estructura de Tablas}
+
+\begin{lstlisting}[language=SQL, caption=Tablas principales de la base de datos]
+-- Tabla de usuarios
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de mensajes
+CREATE TABLE mensajes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    contenido TEXT NOT NULL,
+    estado ENUM('NUEVO', 'PENDIENTE', 'EN_MODERACION', 'BLOQUEADO', 'APROBADO', 'RECHAZADO', 'SOSPECHOSO') 
+           DEFAULT 'NUEVO',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_moderacion TIMESTAMP NULL,
+    usuario_id INT,
+    razones_bloqueo TEXT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- Tabla de palabras prohibidas
+CREATE TABLE palabras_prohibidas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    palabra VARCHAR(100) NOT NULL UNIQUE,
+    razon VARCHAR(255) NOT NULL,
+    severidad INT DEFAULT 1 CHECK (severidad BETWEEN 1 AND 5),
+    fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de palabras con peso
+CREATE TABLE palabras_peso (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    palabra VARCHAR(100) NOT NULL UNIQUE,
+    peso DECIMAL(10,2) NOT NULL DEFAULT 1.0,
+    contexto VARCHAR(255) NULL,
+    fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\end{lstlisting}
+
+\vfill
+
+\begin{center}
+\textbf{Fin del Documento}
+
+Universidad Siglo 21 - Seminario de Práctica de Informática
+
+Bayot, Eduardo - 2025
+\end{center}
+
+\end{document}

@@ -1,0 +1,78 @@
+@startuml Use Case Diagram - Sistema de Moderación Escalonada
+!define RECTANGLE class
+
+skinparam actorStyle awesome
+skinparam usecaseStyle uml2
+
+left to right direction
+
+actor Usuario as "Usuario\n(Jugador)" #LightBlue
+actor Administrador as "Administrador" #LightGreen  
+actor Moderador as "Moderador" #LightYellow
+
+package "Sistema de Moderación Escalonada y Eficaz" #LightCyan {
+  usecase UC01 as "Enviar Mensaje\nde Chat"
+  usecase UC02 as "Filtrar Mensaje\ncon Mayúsculas"
+  usecase UC03 as "Filtrar Mensaje con\nExceso de Puntuación"
+  usecase UC04 as "Detectar\nCorreos Electrónicos"
+  usecase UC05 as "Detectar\nNúmeros de Teléfono"
+  usecase UC06 as "Verificar\nRepetición de Mensajes"
+  usecase UC07 as "Verificar\nVelocidad de Envío"
+  usecase UC08 as "Bloquear\nPalabras Prohibidas"
+  usecase UC09 as "Detectar\nCombinaciones Sospechosas"
+  usecase UC10 as "Calcular\nPeso de Mensajes"
+  usecase UC11 as "Consultar\nAPI Externa"
+  usecase UC12 as "Actualizar\nDiccionario de Moderación"
+  usecase UC13 as "Revisar\nMensajes Sospechosos"
+}
+
+database "Base de Datos MySQL" as BD #LightGray {
+}
+
+cloud "API Externa\nMachine Learning" as API #LightPink {
+}
+
+' Relaciones Usuario
+Usuario --> UC01
+
+' Relaciones Administrador
+Administrador --> UC12
+
+' Relaciones Moderador
+Moderador --> UC13
+
+' Relaciones internas del Sistema de Moderación
+UC01 --> UC02 : <<include>>
+UC02 --> UC03 : <<include>>
+UC03 --> UC04 : <<include>>
+UC04 --> UC05 : <<include>>
+UC05 --> UC06 : <<include>>
+UC06 --> UC07 : <<include>>
+UC07 --> UC08 : <<include>>
+UC08 --> UC09 : <<include>>
+UC09 --> UC10 : <<include>>
+UC10 --> UC11 : <<extend>>
+
+' Relaciones con Base de Datos
+UC06 ..> BD : consulta
+UC07 ..> BD : consulta
+UC08 ..> BD : consulta
+UC09 ..> BD : consulta
+UC10 ..> BD : consulta
+
+' Relación con API Externa
+UC11 --> API : <<use>>
+
+note right of UC02
+  Filtro rápido local
+  Umbral > 50% mayúsculas
+end note
+
+note right of UC11
+  Solo se consulta si
+  las validaciones
+  locales pasan
+end note
+
+@enduml
+

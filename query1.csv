@@ -1,0 +1,6 @@
+contenido,estado,usuario,razonBloqueo
+"ESTE ES UN MENSAJE COMPLETAMENTE EN MAYÚSCULAS",bloqueado,"Juan Perez","Exceso de mayúsculas"
+"¡Esto es increíble!!!","en moderacion","Juan Perez",NULL
+"Este es un mensaje normal.",aprobado,"Ana Martinez",NULL
+"Este MENSAJE tiene un 85% de MAYÚSCULAS",bloqueado,"Carlos Gomez","Exceso de mayúsculas"
+"Hola, ¿cómo estás?",aprobado,"Lucia Lopez",NULL

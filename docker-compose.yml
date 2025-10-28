@@ -1,0 +1,31 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: moderacion-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: moderacion2025
+      MYSQL_DATABASE: moderacion_db
+      MYSQL_USER: moderacion_user
+      MYSQL_PASSWORD: moderacion_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init_database.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - moderacion-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mariadb_data:
+    driver: local
+
+networks:
+  moderacion-network:
+    driver: bridge
+

@@ -1,0 +1,81 @@
+@startuml CU12 - Actualizar Diccionario de Moderación
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+
+actor "Administrador" as Admin
+participant "VentanaAdmin" as App
+participant "PalabraProhibidaDAO" as DAO_PP
+participant "PalabraPesoDAO" as DAO_PPeso
+participant "Base de Datos" as DB
+
+Admin -> App: abre panel de administración
+activate App
+
+App -> App: mostrar diccionario actual
+activate App
+
+note right of App
+  Interfaz gráfica para
+  gestión de diccionarios
+end note
+
+App --> Admin: muestra lista de palabras
+deactivate App
+
+alt agregar palabra prohibida
+    Admin -> App: ingresa nueva palabra
+    App -> DAO_PP: insertarPalabraProhibida()
+    activate DAO_PP
+    DAO_PP -> DB: INSERT INTO palabras_prohibidas
+    activate DB
+    DB --> DAO_PP: confirmación
+    deactivate DB
+    DAO_PP --> App: éxito
+    deactivate DAO_PP
+    
+    note over App
+      Palabra agregada al diccionario
+      Se aplicará automáticamente
+      en próximas validaciones
+    end note
+else modificar peso de palabra
+    Admin -> App: selecciona palabra existente
+    App -> DAO_PPeso: actualizarPeso(palabra, nuevoPeso)
+    activate DAO_PPeso
+    DAO_PPeso -> DB: UPDATE palabras_peso
+    activate DB
+    DB --> DAO_PPeso: confirmación
+    deactivate DB
+    DAO_PPeso --> App: éxito
+    deactivate DAO_PPeso
+    
+    note over App
+      Peso actualizado
+      Algoritmo de moderación
+      usará nuevo peso
+    end note
+else eliminar palabra
+    Admin -> App: selecciona palabra a eliminar
+    App -> DAO_PP: eliminarPalabra(id)
+    activate DAO_PP
+    DAO_PP -> DB: DELETE FROM palabras_prohibidas
+    activate DB
+    DB --> DAO_PP: confirmación
+    deactivate DB
+    DAO_PP --> App: éxito
+    deactivate DAO_PP
+    
+    note over App
+      Palabra eliminada del diccionario
+      Ya no se bloqueará automáticamente
+    end note
+end
+
+App -> App: refrescar vista
+activate App
+
+App --> Admin: muestra diccionario actualizado
+deactivate App
+
+@enduml
+

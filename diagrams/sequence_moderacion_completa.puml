@@ -1,0 +1,78 @@
+@startuml Flujo de Moderación Completo
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+
+actor "Usuario" as User
+participant "VentanaAdmin" as App
+participant "ServicioValidacion" as Validator
+participant "Mensaje" as Msg
+participant "Base de Datos" as DB
+
+User -> App: envía mensaje pendiente
+activate App
+
+App -> Validator: validarMensaje(mensaje)
+activate Validator
+
+loop Validaciones Escalonadas
+    Validator -> Validator: verificar mayúsculas
+    Validator -> Validator: verificar puntuación
+    Validator -> Validator: verificar correos
+    Validator -> Validator: verificar teléfonos
+    Validator -> DB: consultar mensajes repetidos
+    DB --> Validator: resultados
+    Validator -> DB: consultar palabras prohibidas
+    DB --> Validator: palabras encontradas
+    Validator -> DB: calcular peso del mensaje
+    DB --> Validator: peso calculado
+    Validator -> DB: verificar velocidad de envío
+    DB --> Validator: historial
+end
+
+Validator -> Validator: determinarEstado(razones)
+activate Validator
+
+note right of Validator
+  Si razones >= 3: BLOQUEADO
+  Si razones >= 1: SOSPECHOSO  
+  Si razones = 0: PENDIENTE
+end note
+
+Validator --> App: razones[] + estado
+deactivate Validator
+
+App -> Msg: setEstado(estado)
+App -> Msg: setRazonesBloqueo(razones)
+activate Msg
+
+App -> DB: actualizarMensaje(mensaje)
+activate DB
+DB --> App: confirmación
+deactivate DB
+
+App -> App: actualizar vista
+deactivate App
+
+deactivate Msg
+
+App --> User: muestra estado y razones
+
+alt estado = BLOQUEADO
+    note over User
+      Mensaje bloqueado automáticamente
+      No requiere revisión humana
+    end note
+else estado = SOSPECHOSO
+    note over User
+      Mensaje marcado como sospechoso
+      Requiere revisión de moderador
+    end note
+else estado = PENDIENTE
+    note over User
+      Mensaje pendiente de aprobación
+      Esperando decisión manual
+    end note
+end
+
+@enduml
+

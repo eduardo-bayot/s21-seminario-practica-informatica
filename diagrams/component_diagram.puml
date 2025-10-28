@@ -1,0 +1,65 @@
+@startuml Component Diagram - Sistema de Moderación
+skinparam componentStyle uml2
+skinparam roundcorner 15
+
+package "Interfaz de Usuario" {
+  component [VentanaAdmin] as AdminUI
+  component [Main] as MainApp
+}
+
+package "Lógica de Negocio" {
+  component [ServicioValidacion] as Validator
+}
+
+package "Acceso a Datos" {
+  component [MensajeDAO] as MsgDAO
+  component [PalabraProhibidaDAO] as PPDAO
+  component [PalabraPesoDAO] as PesoDAO
+}
+
+package "Modelo de Dominio" {
+  component [Mensaje] as Message
+  component [EstadoMensaje] as State
+  component [PalabraProhibida] as PP
+  component [PalabraPeso] as Peso
+}
+
+package "Base de Datos" {
+  database MySQL {
+    component "Tabla: mensajes" as TabMsg
+    component "Tabla: palabras_prohibidas" as TabPP
+    component "Tabla: palabras_peso" as TabPeso
+    component "Tabla: usuarios" as TabUsr
+  }
+}
+
+MainApp --> AdminUI : launches
+AdminUI --> Validator : uses
+AdminUI --> MsgDAO : uses
+Validator --> MsgDAO : uses
+Validator --> PPDAO : uses
+Validator --> PesoDAO : uses
+Validator --> Message : validates
+MsgDAO --> Message : manages
+PPDAO --> PP : manages
+PesoDAO --> Peso : manages
+MsgDAO --> TabMsg : accesses
+PPDAO --> TabPP : accesses
+PesoDAO --> TabPeso : accesses
+
+note top of AdminUI
+  Interfaz gráfica Java Swing
+  para moderación de mensajes
+end note
+
+note right of Validator
+  Aplica validaciones escalonadas:
+  - Mayúsculas
+  - Puntuación
+  - Correos/Teléfonos
+  - Palabras prohibidas
+  - Peso del mensaje
+end note
+
+@enduml
+

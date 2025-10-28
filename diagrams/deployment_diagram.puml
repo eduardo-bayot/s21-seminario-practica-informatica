@@ -1,0 +1,45 @@
+@startuml Deployment Diagram - Sistema de Moderación
+skinparam roundcorner 15
+skinparam shadowing true
+
+node "Computador del Moderador" {
+  artifact "Aplicación Desktop Java Swing" {
+    component VentanaAdmin
+    component ServicioValidacion
+    component MensajeDAO
+    component PalabraProhibidaDAO
+    component PalabraPesoDAO
+  }
+  
+  database MySQL {
+    component "Base de Datos\nmoderacion_db" as DB
+  }
+  
+  component "Java Runtime\nEnvironment (JRE)" as JRE
+  
+  VentanaAdmin --> ServicioValidacion : uses
+  ServicioValidacion --> MensajeDAO : uses
+  ServicioValidacion --> PalabraProhibidaDAO : uses
+  ServicioValidacion --> PalabraPesoDAO : uses
+  MensajeDAO --> DB : JDBC
+  PalabraProhibidaDAO --> DB : JDBC
+  PalabraPesoDAO --> DB : JDBC
+  DB --> JRE : requiere
+}
+
+note right of VentanaAdmin
+  Aplicación de escritorio
+  para moderación manual
+  de mensajes
+end note
+
+note bottom of DB
+  Almacena:
+  - Mensajes pendientes
+  - Palabras prohibidas
+  - Pesos de palabras
+  - Historial de moderación
+end note
+
+@enduml
+
