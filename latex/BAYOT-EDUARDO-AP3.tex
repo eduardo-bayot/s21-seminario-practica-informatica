@@ -38,6 +38,34 @@
              {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
              {ñ}{{\~n}}1 {Ñ}{{\~N}}1
 }
+
+% Configuración de listings para Java
+\lstdefinestyle{javastyle}{
+    language=Java,
+    basicstyle=\ttfamily\small,
+    commentstyle=\color{green!60!black},
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=4,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={\%*}{*)},
+    extendedchars=true,
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+             {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+             {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+}
+
 \lstset{style=sqlstyle}
 
 % Comando para escalar imágenes automáticamente
@@ -856,7 +884,596 @@ CU13 & Revisar Mensajes Sospechosos & RF14 \\ \hline
 
 \subsection{Arquitectura del Sistema}
 
-La aplicación fue desarrollada como un sistema de moderación para manejar el flujo y control de mensajes en línea. El sistema implementa un enfoque modular donde cada componente cumple una responsabilidad específica dentro del proceso de moderación.
+La aplicación fue desarrollada como un sistema de moderación para manejar el flujo y control de mensajes en línea. El sistema implementa un enfoque modular donde cada componente cumple una responsabilidad específica dentro del proceso de moderación. El desarrollo aplica los principios fundamentales de Programación Orientada a Objetos (POO) y utiliza las características principales del lenguaje Java, incluyendo encapsulamiento, herencia, polimorfismo, abstracción, manejo de excepciones y conexión a base de datos mediante JDBC.
+
+\subsection{Aplicación de Conceptos de Programación Orientada a Objetos}
+
+\subsubsection{Encapsulamiento}
+
+El encapsulamiento se aplica consistentemente en todas las clases del sistema mediante el uso de modificadores de acceso. Los atributos se declaran como \texttt{private} y se accede a ellos únicamente a través de métodos públicos (\texttt{getters} y \texttt{setters}).
+
+\textbf{Ejemplo en la clase Mensaje.java:}
+
+\begin{lstlisting}[language=Java, caption=Ejemplo de encapsulamiento en Mensaje.java]
+public class Mensaje {
+    // Atributos privados - encapsulados
+    private int id;
+    private String contenido;
+    private EstadoMensaje estado;
+    private LocalDateTime fechaCreacion;
+    private int usuarioId;
+    private List<String> razonesBloqueo;
+    
+    // Constructor que inicializa los atributos encapsulados
+    public Mensaje(int id, String contenido, EstadoMensaje estado, 
+                   LocalDateTime fechaCreacion, int usuarioId) {
+        this.id = id;
+        this.contenido = contenido;
+        this.estado = estado;
+        this.fechaCreacion = fechaCreacion;
+        this.usuarioId = usuarioId;
+        this.razonesBloqueo = new ArrayList<>();
+    }
+    
+    // Métodos públicos para acceder a los atributos privados
+    public int getId() {
+        return id;
+    }
+    
+    public void setId(int id) {
+        this.id = id;
+    }
+    
+    public String getContenido() {
+        return contenido;
+    }
+    
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
+    }
+}
+\end{lstlisting}
+
+Este diseño garantiza que los datos internos de la clase no puedan ser modificados directamente desde fuera, protegiendo la integridad de los objetos y permitiendo validaciones o transformaciones en los métodos de acceso.
+
+\subsubsection{Herencia}
+
+La herencia se aplica en dos niveles principales del sistema:
+
+\textbf{1. Herencia de clases de Java Swing:}
+
+La clase \texttt{VentanaAdmin} extiende \texttt{JFrame}, heredando toda la funcionalidad de una ventana de escritorio:
+
+\begin{lstlisting}[language=Java, caption=Herencia en VentanaAdmin.java]
+public class VentanaAdmin extends JFrame {
+    // Hereda métodos como setTitle(), setDefaultCloseOperation(),
+    // setLayout(), add(), pack(), setVisible(), etc.
+}
+\end{lstlisting}
+
+\textbf{2. Herencia de clases internas:}
+
+La clase interna \texttt{MensajeListRenderer} extiende \texttt{DefaultListCellRenderer} para personalizar la visualización de elementos en la lista:
+
+\begin{lstlisting}[language=Java, caption=Herencia en clase interna MensajeListRenderer]
+class MensajeListRenderer extends DefaultListCellRenderer {
+    @Override
+    public Component getListCellRendererComponent(JList<?> list, 
+            Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        // Llama al método de la clase padre
+        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        
+        // Personaliza el comportamiento heredado
+        if (value instanceof Mensaje) {
+            Mensaje msg = (Mensaje) value;
+            setText(msg.toString());
+            // ... personalización adicional
+        }
+        return this;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Polimorfismo}
+
+El polimorfismo se aplica de múltiples formas en el sistema:
+
+\textbf{1. Polimorfismo mediante interfaces:}
+
+Los listeners de eventos utilizan polimorfismo a través de interfaces:
+
+\begin{lstlisting}[language=Java, caption=Polimorfismo con ActionListener]
+// Implementación anónima de la interfaz ActionListener
+btnAprobar.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        aprobarMensajeSeleccionado();
+    }
+});
+
+// Expresión lambda (polimorfismo funcional)
+listaMensajes.addListSelectionListener(e -> {
+    if (!e.getValueIsAdjusting()) {
+        mostrarDetalleMensaje();
+    }
+});
+\end{lstlisting}
+
+\textbf{2. Polimorfismo mediante sobreescritura de métodos:}
+
+La clase \texttt{Mensaje} sobreescribe los métodos \texttt{toString()}, \texttt{equals()} y \texttt{hashCode()} de la clase \texttt{Object}:
+
+\begin{lstlisting}[language=Java, caption=Polimorfismo mediante sobreescritura en Mensaje.java]
+@Override
+public String toString() {
+    String preview = contenido.length() > 50 
+                     ? contenido.substring(0, 50) + "..." 
+                     : contenido;
+    String razones = razonesBloqueo.isEmpty() ? "" : 
+                     " (" + razonesBloqueo.size() + " razones)";
+    return "Mensaje #" + id + " [" + estado.getDescripcion() + "]: " 
+           + preview + razones;
+}
+
+@Override
+public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Mensaje mensaje = (Mensaje) obj;
+    return id == mensaje.id;
+}
+
+@Override
+public int hashCode() {
+    return id;
+}
+\end{lstlisting}
+
+\textbf{3. Polimorfismo mediante sobrecarga de métodos:}
+
+La clase \texttt{Mensaje} implementa sobrecarga de constructores y métodos:
+
+\begin{lstlisting}[language=Java, caption=Sobrecarga de constructores y métodos]
+// Constructor 1: recibe EstadoMensaje como enum
+public Mensaje(int id, String contenido, EstadoMensaje estado, 
+               LocalDateTime fechaCreacion, int usuarioId) {
+    // ...
+}
+
+// Constructor 2: recibe estado como String (sobrecarga)
+public Mensaje(int id, String contenido, String estado, 
+               LocalDateTime fechaCreacion, int usuarioId) {
+    this.id = id;
+    this.contenido = contenido;
+    this.estado = parsearEstado(estado); // Conversión interna
+    // ...
+}
+
+// Método setEstado sobrecargado
+public void setEstado(EstadoMensaje estado) {
+    this.estado = estado;
+}
+
+public void setEstado(String estado) {
+    this.estado = parsearEstado(estado);
+}
+\end{lstlisting}
+
+\subsubsection{Abstracción}
+
+La abstracción se logra mediante:
+
+\textbf{1. Clases abstractas e interfaces de Java Swing:}
+
+El sistema utiliza interfaces como \texttt{ActionListener} y \texttt{ListSelectionListener} que definen contratos sin implementación concreta:
+
+\begin{lstlisting}[language=Java, caption=Abstracción mediante interfaces]
+// La interfaz ActionListener define un contrato abstracto
+public interface ActionListener {
+    void actionPerformed(ActionEvent e);
+}
+
+// Implementación concreta en el código
+btnAprobar.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Implementación específica
+    }
+});
+\end{lstlisting}
+
+\textbf{2. Abstracción mediante el patrón DAO:}
+
+Las clases DAO abstraen los detalles de acceso a la base de datos, proporcionando una interfaz simple para operaciones CRUD:
+
+\begin{lstlisting}[language=Java, caption=Abstracción en MensajeDAO]
+public class MensajeDAO {
+    // Abstrae los detalles de conexión y consultas SQL
+    public List<Mensaje> obtenerMensajesPendientes() {
+        // Implementación oculta los detalles de JDBC
+    }
+    
+    public boolean aprobarMensaje(int id) {
+        // Abstrae la complejidad de UPDATE SQL
+    }
+}
+\end{lstlisting}
+
+\subsection{Tipos de Datos Utilizados}
+
+El sistema utiliza una amplia variedad de tipos de datos primitivos y objetos:
+
+\subsubsection{Tipos Primitivos}
+
+\begin{itemize}
+\item \textbf{int}: Para identificadores y contadores (ej: \texttt{id}, \texttt{usuarioId}, \texttt{severidad})
+\item \textbf{double}: Para cálculos de peso y porcentajes (ej: \texttt{pesoTotal}, \texttt{porcentaje})
+\item \textbf{boolean}: Para valores lógicos (ej: retorno de métodos de validación)
+\item \textbf{long}: Para conteos de caracteres y timestamps (ej: \texttt{mayusculas}, \texttt{totalMensajes})
+\end{itemize}
+
+\subsubsection{Tipos de Objetos}
+
+\begin{itemize}
+\item \textbf{String}: Para contenido de mensajes, razones de bloqueo, consultas SQL
+\item \textbf{List<String>}: Para colecciones de razones de bloqueo y resultados de validación
+\item \textbf{ArrayList}: Implementación concreta de List para almacenar mensajes y palabras
+\item \textbf{HashMap}: Para conteo de palabras repetidas en validaciones
+\item \textbf{LocalDateTime}: Para timestamps de creación y moderación de mensajes
+\item \textbf{Pattern}: Para expresiones regulares compiladas (email, teléfono)
+\item \textbf{Optional<PalabraPeso>}: Para manejar valores opcionales de forma segura
+\end{itemize}
+
+\textbf{Ejemplo de uso de tipos de datos en ServicioValidacion.java:}
+
+\begin{lstlisting}[language=Java, caption=Ejemplo de tipos de datos]
+public List<String> validarMensaje(Mensaje mensaje) {
+    List<String> razones = new ArrayList<>(); // Lista de objetos String
+    
+    // Uso de tipos primitivos
+    double pesoCalculado = calcularPeso(mensaje.getContenido()); // double
+    if (pesoCalculado > 10.0) { // Comparación con primitivo
+        razones.add(String.format("Mensaje con peso sospechoso alto (%.2f > 10.0)", 
+                                  pesoCalculado));
+    }
+    
+    // Uso de tipos objeto
+    long mayusculas = contenido.chars() // Stream API retorna long
+        .filter(Character::isUpperCase)
+        .count();
+    double porcentaje = (double) mayusculas / contenido.length(); // Cast a double
+    
+    return razones; // Retorna List<String>
+}
+\end{lstlisting}
+
+\subsection{Declaración y Creación de Objetos}
+
+El sistema demuestra múltiples formas de declarar y crear objetos en Java:
+
+\subsubsection{Creación mediante Constructores}
+
+\begin{lstlisting}[language=Java, caption=Creación de objetos con constructores]
+// En VentanaAdmin.java - constructor de la clase
+public VentanaAdmin() {
+    // Creación de objetos DAO
+    mensajeDAO = new MensajeDAO();
+    servicioValidacion = new ServicioValidacion(mensajeDAO);
+    
+    // Creación de componentes Swing
+    modeloLista = new DefaultListModel<>();
+    listaMensajes = new JList<>(modeloLista);
+    areaContenido = new JTextArea();
+    
+    // Creación de objetos con parámetros
+    JButton btnAprobar = new JButton("Aprobar");
+    Color colorVerde = new Color(76, 175, 80);
+    
+    inicializarComponentes();
+    cargarMensajesPendientes();
+}
+\end{lstlisting}
+
+\subsubsection{Creación mediante Factory Methods}
+
+\begin{lstlisting}[language=Java, caption=Creación mediante métodos estáticos]
+// Pattern.compile() es un factory method
+private static final Pattern EMAIL_PATTERN = Pattern.compile(
+    "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+);
+
+// DriverManager.getConnection() es un factory method
+Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+
+// Arrays.asList() es un factory method
+List<String> razonesList = Arrays.asList(razones.split(";"));
+\end{lstlisting}
+
+\subsubsection{Creación de Objetos desde ResultSet}
+
+\begin{lstlisting}[language=Java, caption=Creación de objetos desde base de datos]
+private Mensaje crearMensajeDesdeResultSet(ResultSet rs) throws SQLException {
+    // Creación de objeto Mensaje con datos de la base de datos
+    Mensaje msg = new Mensaje(
+        rs.getInt("id"),                    // int primitivo
+        rs.getString("contenido"),          // String
+        rs.getString("estado"),             // String (se convierte a enum)
+        rs.getTimestamp("fecha_creacion").toLocalDateTime(), // LocalDateTime
+        rs.getInt("usuario_id")             // int primitivo
+    );
+    
+    // Creación de lista desde String
+    String razones = rs.getString("razones_bloqueo");
+    if (razones != null && !razones.isEmpty()) {
+        List<String> razonesList = Arrays.asList(razones.split(";"));
+        msg.setRazonesBloqueo(razonesList);
+    }
+    
+    return msg;
+}
+\end{lstlisting}
+
+\subsection{Constructores}
+
+El sistema implementa constructores de diferentes tipos:
+
+\subsubsection{Constructores con Parámetros}
+
+\begin{lstlisting}[language=Java, caption=Constructores con parámetros en Mensaje.java]
+// Constructor principal con todos los parámetros
+public Mensaje(int id, String contenido, EstadoMensaje estado, 
+               LocalDateTime fechaCreacion, int usuarioId) {
+    this.id = id;
+    this.contenido = contenido;
+    this.estado = estado;
+    this.fechaCreacion = fechaCreacion;
+    this.usuarioId = usuarioId;
+    this.razonesBloqueo = new ArrayList<>(); // Inicialización de lista
+}
+
+// Constructor sobrecargado que acepta String para estado
+public Mensaje(int id, String contenido, String estado, 
+               LocalDateTime fechaCreacion, int usuarioId) {
+    this.id = id;
+    this.contenido = contenido;
+    this.estado = parsearEstado(estado); // Conversión interna
+    this.fechaCreacion = fechaCreacion;
+    this.usuarioId = usuarioId;
+    this.razonesBloqueo = new ArrayList<>();
+}
+\end{lstlisting}
+
+\subsubsection{Constructor con Inyección de Dependencias}
+
+\begin{lstlisting}[language=Java, caption=Constructor con dependencias en ServicioValidacion]
+public ServicioValidacion(MensajeDAO mensajeDAO) {
+    this.mensajeDAO = mensajeDAO; // Inyección de dependencia
+    this.palabraProhibidaDAO = new PalabraProhibidaDAO();
+    this.palabraPesoDAO = new PalabraPesoDAO();
+}
+\end{lstlisting}
+
+\subsubsection{Constructor de Enum con Parámetros}
+
+\begin{lstlisting}[language=Java, caption=Constructor en enum EstadoMensaje]
+public enum EstadoMensaje {
+    NUEVO("Nuevo"),
+    PENDIENTE("Pendiente"),
+    BLOQUEADO("Bloqueado"),
+    // ...
+    
+    private final String descripcion;
+    
+    // Constructor del enum
+    EstadoMensaje(String descripcion) {
+        this.descripcion = descripcion;
+    }
+    
+    public String getDescripcion() {
+        return descripcion;
+    }
+}
+\end{lstlisting}
+
+\subsection{Manejo de Excepciones}
+
+El sistema implementa manejo robusto de excepciones en múltiples niveles:
+
+\subsubsection{Try-Catch para Manejo de Excepciones SQL}
+
+\begin{lstlisting}[language=Java, caption=Manejo de SQLException en MensajeDAO]
+public List<Mensaje> obtenerMensajesPendientes() {
+    List<Mensaje> mensajes = new ArrayList<>();
+    String sql = "SELECT id, contenido, estado, fecha_creacion, usuario_id, razones_bloqueo " +
+                 "FROM mensajes WHERE estado IN ('PENDIENTE', 'SOSPECHOSO') " +
+                 "ORDER BY fecha_creacion";
+    
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        
+        while (rs.next()) {
+            Mensaje msg = crearMensajeDesdeResultSet(rs);
+            mensajes.add(msg);
+        }
+    } catch (SQLException e) {
+        // Manejo de excepción: logging y stack trace
+        System.err.println("Error al obtener mensajes pendientes: " + e.getMessage());
+        e.printStackTrace();
+    }
+    
+    return mensajes;
+}
+\end{lstlisting}
+
+\subsubsection{Try-With-Resources para Gestión Automática}
+
+El sistema utiliza try-with-resources para garantizar el cierre automático de recursos:
+
+\begin{lstlisting}[language=Java, caption=Try-with-resources para conexiones]
+// Los recursos se cierran automáticamente al salir del bloque try
+try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+     PreparedStatement stmt = conn.prepareStatement(sql)) {
+    
+    stmt.setInt(1, id);
+    int rowsAffected = stmt.executeUpdate();
+    return rowsAffected > 0;
+    
+} catch (SQLException e) {
+    System.err.println("Error al actualizar estado del mensaje: " + e.getMessage());
+    e.printStackTrace();
+    return false; // Retorno seguro en caso de error
+}
+\end{lstlisting}
+
+\subsubsection{Manejo de Excepciones en Conversión de Tipos}
+
+\begin{lstlisting}[language=Java, caption=Manejo de IllegalArgumentException]
+private EstadoMensaje parsearEstado(String estadoStr) {
+    try {
+        return EstadoMensaje.valueOf(estadoStr.toUpperCase());
+    } catch (IllegalArgumentException e) {
+        // Retorna un valor por defecto si la conversión falla
+        return EstadoMensaje.PENDIENTE;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Propagación de Excepciones}
+
+\begin{lstlisting}[language=Java, caption=Propagación de excepciones en métodos privados]
+// El método lanza SQLException que debe ser manejada por el llamador
+private Mensaje crearMensajeDesdeResultSet(ResultSet rs) throws SQLException {
+    Mensaje msg = new Mensaje(
+        rs.getInt("id"),
+        rs.getString("contenido"),
+        rs.getString("estado"),
+        rs.getTimestamp("fecha_creacion").toLocalDateTime(),
+        rs.getInt("usuario_id")
+    );
+    return msg;
+}
+\end{lstlisting}
+
+\subsection{Conexión a Base de Datos}
+
+El sistema implementa conexión completa a base de datos MariaDB/MySQL mediante JDBC:
+
+\subsubsection{Configuración de Conexión}
+
+\begin{lstlisting}[language=Java, caption=Configuración de conexión en MensajeDAO]
+public class MensajeDAO {
+    // Constantes estáticas finales para configuración
+    private static final String URL = "jdbc:mariadb://localhost:3306/moderacion_db";
+    private static final String USER = "moderacion_user";
+    private static final String PASSWORD = "moderacion_pass";
+    
+    // Método que establece la conexión
+    public List<Mensaje> obtenerMensajesPendientes() {
+        // Establecimiento de conexión
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            // Procesamiento de resultados
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Operaciones CRUD Completas}
+
+\textbf{1. Consulta (SELECT):}
+
+\begin{lstlisting}[language=Java, caption=Consulta con parámetros]
+public List<Mensaje> obtenerUltimosMensajes(int usuarioId, int cantidad) {
+    List<Mensaje> mensajes = new ArrayList<>();
+    String sql = "SELECT id, contenido, estado, fecha_creacion, usuario_id, razones_bloqueo " +
+                 "FROM mensajes WHERE usuario_id = ? ORDER BY fecha_creacion DESC LIMIT ?";
+    
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        // Establecimiento de parámetros (prevención de inyección SQL)
+        stmt.setInt(1, usuarioId);      // Parámetro 1: int
+        stmt.setInt(2, cantidad);       // Parámetro 2: int
+        
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Mensaje msg = crearMensajeDesdeResultSet(rs);
+                mensajes.add(msg);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error al obtener últimos mensajes: " + e.getMessage());
+        e.printStackTrace();
+    }
+    
+    return mensajes;
+}
+\end{lstlisting}
+
+\textbf{2. Actualización (UPDATE):}
+
+\begin{lstlisting}[language=Java, caption=Actualización en base de datos]
+public boolean aprobarMensaje(int id) {
+    String sql = "UPDATE mensajes SET estado = 'APROBADO', " +
+                 "fecha_moderacion = CURRENT_TIMESTAMP WHERE id = ?";
+    
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setInt(1, id);
+        int rowsAffected = stmt.executeUpdate(); // Retorna número de filas afectadas
+        return rowsAffected > 0; // true si se actualizó al menos una fila
+        
+    } catch (SQLException e) {
+        System.err.println("Error al actualizar estado del mensaje: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    }
+}
+\end{lstlisting}
+
+\textbf{3. Actualización con Múltiples Parámetros:}
+
+\begin{lstlisting}[language=Java, caption=UPDATE con múltiples parámetros en VentanaAdmin]
+private void actualizarMensajeEnBD(Mensaje mensaje) {
+    String URL = "jdbc:mariadb://localhost:3306/moderacion_db";
+    String USER = "moderacion_user";
+    String PASSWORD = "moderacion_pass";
+    String sql = "UPDATE mensajes SET estado = ?, razones_bloqueo = ? WHERE id = ?";
+    
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        // Establecimiento de parámetros en orden
+        stmt.setString(1, mensaje.getEstado().name()); // Enum convertido a String
+        String razonesTexto = String.join(";", mensaje.getRazonesBloqueo());
+        stmt.setString(2, razonesTexto); // Lista convertida a String
+        stmt.setInt(3, mensaje.getId()); // ID del mensaje
+        
+        stmt.executeUpdate(); // Ejecuta la actualización
+    } catch (SQLException e) {
+        System.err.println("Error al actualizar mensaje: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Prevención de Inyección SQL}
+
+El sistema utiliza \texttt{PreparedStatement} en todas las consultas para prevenir inyección SQL:
+
+\begin{lstlisting}[language=Java, caption=Uso de PreparedStatement para seguridad]
+// INSEGURO (no se usa en el codigo):
+// String sql = "SELECT * FROM mensajes WHERE id = " + id;
+
+// SEGURO (implementado en el codigo):
+String sql = "SELECT * FROM mensajes WHERE id = ?";
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setInt(1, id); // El parámetro se escapa automáticamente
+ResultSet rs = stmt.executeQuery();
+\end{lstlisting}
 
 \subsection{Estructura de Clases Principales}
 
