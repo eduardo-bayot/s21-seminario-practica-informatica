@@ -3,7 +3,9 @@ package com.moderacion;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Clase de acceso a datos para mensajes
@@ -133,6 +135,104 @@ public class MensajeDAO {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    /**
+     * Inserta un nuevo mensaje en la base de datos
+     * @param mensaje El mensaje a insertar
+     * @return El ID del mensaje insertado, o -1 si hubo error
+     */
+    public int insertarMensaje(Mensaje mensaje) {
+        String sql = "INSERT INTO mensajes (contenido, estado, fecha_creacion, usuario_id, razones_bloqueo) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            stmt.setString(1, mensaje.getContenido());
+            stmt.setString(2, mensaje.getEstado().name());
+            stmt.setTimestamp(3, Timestamp.valueOf(mensaje.getFechaCreacion()));
+            stmt.setInt(4, mensaje.getUsuarioId());
+            
+            // Convertir lista de razones a String separado por ;
+            String razonesStr = mensaje.getRazonesBloqueo().isEmpty() ? 
+                               null : String.join(";", mensaje.getRazonesBloqueo());
+            stmt.setString(5, razonesStr);
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                // Obtener el ID generado
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1);
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error al insertar mensaje: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return -1;
+    }
+    
+    /**
+     * Obtiene un mensaje por su ID
+     * @param id ID del mensaje
+     * @return El mensaje encontrado, o null si no existe
+     */
+    public Mensaje obtenerMensajePorId(int id) {
+        String sql = "SELECT id, contenido, estado, fecha_creacion, usuario_id, razones_bloqueo " +
+                     "FROM mensajes WHERE id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, id);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return crearMensajeDesdeResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener mensaje por ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Obtiene estadísticas del sistema de moderación
+     * @return Mapa con las estadísticas
+     */
+    public Map<String, Object> obtenerEstadisticas() {
+        Map<String, Object> stats = new HashMap<>();
+        String sql = "SELECT estado, COUNT(*) as cantidad FROM mensajes GROUP BY estado";
+        
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            int totalMensajes = 0;
+            while (rs.next()) {
+                String estado = rs.getString("estado");
+                int cantidad = rs.getInt("cantidad");
+                stats.put(estado.toLowerCase(), cantidad);
+                totalMensajes += cantidad;
+            }
+            
+            stats.put("total", totalMensajes);
+            
+        } catch (SQLException e) {
+            System.err.println("Error al obtener estadísticas: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return stats;
     }
 }
 

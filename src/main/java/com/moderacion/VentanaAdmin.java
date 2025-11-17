@@ -35,6 +35,9 @@ public class VentanaAdmin extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
         
+        // Crear barra de menú
+        crearMenuBar();
+        
         // Panel principal
         JPanel panelPrincipal = new JPanel(new BorderLayout(10, 10));
         panelPrincipal.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -355,6 +358,112 @@ public class VentanaAdmin extends JFrame {
     }
     
     /**
+     * Crea la barra de menú
+     */
+    private void crearMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        
+        // Menú Herramientas
+        JMenu menuHerramientas = new JMenu("Herramientas");
+        
+        JMenuItem itemVentanaPrueba = new JMenuItem("🧪 Ventana de Prueba");
+        itemVentanaPrueba.addActionListener(e -> abrirVentanaPrueba());
+        
+        JMenuItem itemEstadisticas = new JMenuItem("Ver Estadísticas");
+        itemEstadisticas.addActionListener(e -> mostrarEstadisticas());
+        
+        menuHerramientas.add(itemVentanaPrueba);
+        menuHerramientas.addSeparator();
+        menuHerramientas.add(itemEstadisticas);
+        
+        // Menú Ayuda
+        JMenu menuAyuda = new JMenu("Ayuda");
+        
+        JMenuItem itemAcerca = new JMenuItem("ℹAcerca de");
+        itemAcerca.addActionListener(e -> mostrarAcercaDe());
+        
+        menuAyuda.add(itemAcerca);
+        
+        menuBar.add(menuHerramientas);
+        menuBar.add(menuAyuda);
+        
+        setJMenuBar(menuBar);
+    }
+    
+    /**
+     * Abre la ventana de prueba
+     */
+    private void abrirVentanaPrueba() {
+        VentanaPrueba ventanaPrueba = new VentanaPrueba();
+        ventanaPrueba.setVisible(true);
+    }
+    
+    /**
+     * Muestra estadísticas del sistema
+     */
+    private void mostrarEstadisticas() {
+        try {
+            java.util.Map<String, Object> stats = mensajeDAO.obtenerEstadisticas();
+            
+            StringBuilder mensaje = new StringBuilder();
+            mensaje.append("ESTADÍSTICAS DEL SISTEMA\n\n");
+            mensaje.append("═══════════════════════════════════\n\n");
+            
+            int total = (int) stats.getOrDefault("total", 0);
+            mensaje.append("Total de mensajes: ").append(total).append("\n\n");
+            
+            mensaje.append("Por estado:\n");
+            mensaje.append("  • Nuevos: ").append(stats.getOrDefault("nuevo", 0)).append("\n");
+            mensaje.append("  • Pendientes: ").append(stats.getOrDefault("pendiente", 0)).append("\n");
+            mensaje.append("  • Sospechosos: ").append(stats.getOrDefault("sospechoso", 0)).append("\n");
+            mensaje.append("  • Bloqueados: ").append(stats.getOrDefault("bloqueado", 0)).append("\n");
+            mensaje.append("  • Aprobados: ").append(stats.getOrDefault("aprobado", 0)).append("\n");
+            mensaje.append("  • Rechazados: ").append(stats.getOrDefault("rechazado", 0)).append("\n");
+            
+            JOptionPane.showMessageDialog(this,
+                mensaje.toString(),
+                "Estadísticas del Sistema",
+                JOptionPane.INFORMATION_MESSAGE);
+                
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "Error al obtener estadísticas: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * Muestra información acerca del sistema
+     */
+    private void mostrarAcercaDe() {
+        String mensaje = "Sistema de Moderación Escalonada y Eficaz\n\n" +
+            "Versión: 1.0.0\n" +
+            "Autor: Eduardo Agustin Bayot\n\n" +
+            "Universidad Siglo 21\n" +
+            "Seminario de Práctica de Informática\n" +
+            "Trabajo Práctico 4 - 2025\n\n" +
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
+            "Características:\n" +
+            "• 8 algoritmos de validación automática\n" +
+            "• API REST (http://localhost:7000)\n" +
+            "• Interfaz gráfica con Java Swing\n" +
+            "• Persistencia en MySQL con JDBC\n" +
+            "• Ventana de prueba integrada\n\n" +
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
+            "Tecnologías:\n" +
+            "• Java 11+\n" +
+            "• Javalin (REST API)\n" +
+            "• MySQL/MariaDB\n" +
+            "• Java Swing";
+        
+        JOptionPane.showMessageDialog(this,
+            mensaje,
+            "Acerca del Sistema",
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    /**
      * Renderizador personalizado para los mensajes en la lista
      */
     class MensajeListRenderer extends DefaultListCellRenderer {
@@ -367,16 +476,40 @@ public class VentanaAdmin extends JFrame {
                 Mensaje msg = (Mensaje) value;
                 setText(msg.toString());
                 
-                // Colorear según el estado
-                if (msg.getEstado() == EstadoMensaje.BLOQUEADO) {
-                    setBackground(isSelected ? new Color(255, 200, 200) : new Color(255, 240, 240));
-                    setForeground(Color.RED);
-                } else if (msg.getEstado() == EstadoMensaje.SOSPECHOSO) {
-                    setBackground(isSelected ? new Color(255, 255, 200) : new Color(255, 255, 230));
-                    setForeground(Color.ORANGE.darker());
-                } else if (msg.getEstado() == EstadoMensaje.APROBADO) {
-                    setBackground(isSelected ? new Color(200, 255, 200) : new Color(240, 255, 240));
+                // Colores de fondo y texto según el estado
+                Color bgColor = Color.WHITE;
+                Color fgColor = Color.BLACK;
+                
+                switch (msg.getEstado()) {
+                    case BLOQUEADO:
+                        bgColor = isSelected ? new Color(255, 180, 180) : new Color(255, 220, 220);
+                        fgColor = new Color(139, 0, 0); // Rojo oscuro
+                        break;
+                    case SOSPECHOSO:
+                        bgColor = isSelected ? new Color(255, 235, 150) : new Color(255, 245, 200);
+                        fgColor = new Color(139, 90, 0); // Naranja oscuro
+                        break;
+                    case APROBADO:
+                        bgColor = isSelected ? new Color(180, 255, 180) : new Color(220, 255, 220);
+                        fgColor = new Color(0, 100, 0); // Verde oscuro
+                        break;
+                    case RECHAZADO:
+                        bgColor = isSelected ? new Color(220, 200, 200) : new Color(240, 230, 230);
+                        fgColor = new Color(100, 50, 50); // Marrón rojizo
+                        break;
+                    case PENDIENTE:
+                        bgColor = isSelected ? new Color(200, 220, 255) : new Color(230, 240, 255);
+                        fgColor = new Color(0, 51, 102); // Azul oscuro
+                        break;
+                    case NUEVO:
+                        bgColor = isSelected ? new Color(230, 230, 230) : new Color(250, 250, 250);
+                        fgColor = Color.BLACK;
+                        break;
                 }
+                
+                setBackground(bgColor);
+                setForeground(fgColor);
+                setOpaque(true);
             }
             
             return this;

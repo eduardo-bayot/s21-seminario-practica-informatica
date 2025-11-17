@@ -25,3 +25,11 @@ replay_pid*
 
 # maven target folder
 target
+
+latex/BAYOT-EDUARDO-AP*.aux
+latex/BAYOT-EDUARDO-AP*.fdb_latexmk
+latex/BAYOT-EDUARDO-AP*.fls
+latex/BAYOT-EDUARDO-AP*.out
+latex/BAYOT-EDUARDO-AP*.pdf
+latex/BAYOT-EDUARDO-AP*.synctex.gz
+latex/BAYOT-EDUARDO-AP*.toc

@@ -830,6 +830,172 @@ CU13 & Revisar Mensajes Sospechosos & RF14 \\ \hline
 
 \section{Etapa de pruebas}
 
+\subsection{Capturas del Sistema en Funcionamiento}
+
+Esta sección presenta capturas de pantalla de la aplicación de escritorio en funcionamiento, demostrando la implementación exitosa del sistema de moderación escalonada y la integración con la base de datos MySQL.
+
+\subsubsection{Interfaz Principal de Moderación}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=\textwidth]{capturas/interfaz_principal.png}
+\caption{Panel de Administración con lista de mensajes pendientes y panel de detalles}
+\label{fig:interfaz-principal}
+\end{figure}
+
+La Figura \ref{fig:interfaz-principal} muestra la interfaz principal del sistema implementada con Java Swing. Se observa:
+
+\begin{itemize}
+\item Lista de mensajes pendientes a la izquierda con renderer personalizado
+\item Panel de detalles del mensaje seleccionado a la derecha
+\item Área de texto mostrando el contenido completo del mensaje
+\item Estado del mensaje con indicador visual
+\item Razones de bloqueo detectadas por el sistema de validación
+\item Botones de acción: Aprobar, Rechazar, Validar Automáticamente, Actualizar Lista
+\end{itemize}
+
+\subsubsection{Validación Automática de Mensajes}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=0.8\textwidth]{capturas/validacion_automatica.png}
+\caption{Resultado de validación automática mostrando razones de bloqueo detectadas}
+\label{fig:validacion-automatica}
+\end{figure}
+
+La Figura \ref{fig:validacion-automatica} muestra el resultado de aplicar la validación automática a un mensaje. El sistema ejecuta los 8 algoritmos de validación y presenta las razones detectadas:
+
+\begin{itemize}
+\item Palabras prohibidas consultadas desde base de datos
+\item Exceso de mayúsculas (>50\% del texto)
+\item Detección de correos electrónicos mediante expresiones regulares
+\item Detección de números de teléfono
+\item Uso excesivo de signos de puntuación
+\item Cálculo de peso sospechoso del mensaje
+\item Repeticiones excesivas de caracteres o palabras
+\item Detección de envío rápido (posible spam)
+\end{itemize}
+
+\subsubsection{Mensajes con Estados Diferenciados}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=0.7\textwidth]{capturas/estados_coloreados.png}
+\caption{Lista de mensajes pendientes de moderación con estados diferenciados por color}
+\label{fig:estados-coloreados}
+\end{figure}
+
+La Figura \ref{fig:estados-coloreados} demuestra el uso de polimorfismo mediante la clase interna \texttt{MensajeListRenderer} que extiende \texttt{DefaultListCellRenderer}. El panel de administración muestra únicamente mensajes que requieren moderación, coloreados según su estado:
+
+\begin{itemize}
+\item \textcolor{orange}{Amarillo/Naranja}: Mensajes SOSPECHOSOS detectados por validaciones automáticas
+\item \textcolor{blue}{Azul}: Mensajes PENDIENTES esperando primera revisión
+\end{itemize}
+
+Los mensajes ya moderados (BLOQUEADO, APROBADO, RECHAZADO) no aparecen en esta vista porque ya fueron procesados por el sistema o por moderadores humanos. Este diseño permite a los moderadores enfocarse exclusivamente en mensajes que requieren atención, mejorando la eficiencia del proceso de moderación.
+
+\subsubsection{Persistencia en Base de Datos}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=\textwidth]{capturas/base_datos_mensajes.png}
+\caption{Tabla de mensajes en MySQL mostrando persistencia de estados y razones de bloqueo}
+\label{fig:bd-mensajes}
+\end{figure}
+
+La Figura \ref{fig:bd-mensajes} muestra la tabla \texttt{mensajes} en la base de datos MySQL después de ejecutar validaciones y aprobaciones. Se observa la correcta persistencia de:
+
+\begin{itemize}
+\item Estados actualizados mediante operaciones UPDATE con JDBC
+\item Razones de bloqueo almacenadas como texto separado por punto y coma
+\item Fechas de creación y moderación con timestamps
+\item Relación con usuarios mediante clave foránea usuario\_id
+\end{itemize}
+
+\subsubsection{Consulta de Palabras Prohibidas desde Base de Datos}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=0.8\textwidth]{capturas/palabras_prohibidas.png}
+\caption{Tabla palabras\_prohibidas utilizada por el sistema de validación}
+\label{fig:palabras-prohibidas}
+\end{figure}
+
+La Figura \ref{fig:palabras-prohibidas} muestra la tabla \texttt{palabras\_prohibidas} que es consultada por el sistema mediante la clase \texttt{PalabraProhibidaDAO}. Esta tabla permite:
+
+\begin{itemize}
+\item Gestión dinámica del diccionario de moderación
+\item Severidad asignada a cada palabra (1-5)
+\item Razón específica para cada bloqueo
+\item Actualización sin necesidad de recompilar el código
+\end{itemize}
+
+\subsubsection{Algoritmo de Cálculo de Peso}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=0.8\textwidth]{capturas/palabras_peso.png}
+\caption{Tabla palabras\_peso utilizada por el algoritmo de puntuación escalada}
+\label{fig:palabras-peso}
+\end{figure}
+
+La Figura \ref{fig:palabras-peso} muestra la tabla \texttt{palabras\_peso} consultada por \texttt{PalabraPesoDAO}. El algoritmo de cálculo de peso implementado en \texttt{ServicioValidacion.java}:
+
+\begin{itemize}
+\item Consulta el peso de cada palabra desde la base de datos
+\item Aplica un factor de contexto multiplicando por palabras cercanas
+\item Penaliza mensajes muy largos (>50 palabras) con factor 1.2
+\item Bloquea mensajes con peso total superior a 10.0
+\end{itemize}
+
+\subsubsection{Ventana de Prueba de Integración}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=0.9\textwidth]{capturas/ventana_prueba.png}
+\caption{Ventana de prueba mostrando resultado de validación automática con API REST}
+\label{fig:ventana-prueba}
+\end{figure}
+
+La Figura \ref{fig:ventana-prueba} muestra la interfaz de prueba integrada que consume el API REST. La ventana permite enviar mensajes y visualizar los resultados de la validación en tiempo real, demostrando:
+
+\begin{itemize}
+\item \textbf{Arquitectura Cliente-Servidor}: La ventana actúa como cliente HTTP del API REST
+\item \textbf{Consumo de APIs}: Uso de HttpURLConnection para realizar peticiones POST
+\item \textbf{Parseo de JSON}: Deserialización de respuestas usando Gson
+\item \textbf{Visualización de resultados}: Formato legible con colores según el estado del mensaje
+\item \textbf{Testing de integración}: Validación del sistema completo end-to-end
+\end{itemize}
+
+\subsubsection{API REST - Respuesta JSON}
+
+\begin{figure}[htbp]
+\centering
+
+\includegraphics[width=\textwidth]{capturas/api_rest_response.png}
+\caption{Respuesta JSON del API REST al validar un mensaje con múltiples problemas}
+\label{fig:api-rest}
+\end{figure}
+
+La Figura \ref{fig:api-rest} demuestra el funcionamiento del API REST del sistema. El endpoint \texttt{POST /api/mensajes} recibe un mensaje en formato JSON, ejecuta las 8 validaciones automáticas, guarda el resultado en la base de datos, y devuelve una respuesta detallada que incluye:
+
+\begin{itemize}
+\item \textbf{Código de estado HTTP}: 201 (Created) para mensajes nuevos
+\item \textbf{ID del mensaje}: Identificador generado al insertarse en la base de datos
+\item \textbf{Estado}: BLOQUEADO, SOSPECHOSO o PENDIENTE según las validaciones
+\item \textbf{Razones de bloqueo}: Lista detallada de todas las reglas que el mensaje violó
+\item \textbf{Metadatos}: Fecha de creación y otros datos útiles para el cliente
+\end{itemize}
+
+Este API REST permite la integración del sistema de moderación con otras aplicaciones, demostrando una arquitectura moderna y escalable basada en servicios web.
+
 \subsection{Caso de prueba PRU-CU02}
 
 \subsubsection{Precondiciones:}
@@ -1615,6 +1781,165 @@ El patrón de diseño utilizado para la interfaz es \textbf{Model-View-Controlle
 \item \textbf{Controlador}: ActionListeners y ListSelectionListeners
 \end{itemize}
 
+\subsection{API REST con Javalin}
+
+El sistema implementa un servicio web REST utilizando Javalin, un framework minimalista para Java similar a Flask de Python o Express de Node.js. Este servicio permite la interacción con el sistema de moderación mediante HTTP y respuestas en formato JSON.
+
+\subsubsection{Configuración del Servidor}
+
+El servidor REST se configura de manera simple y directa, siguiendo el estilo minimalista de Javalin:
+
+\begin{lstlisting}[language=Java, caption=Configuración del servidor REST en ServicioWebREST.java]
+public class ServicioWebREST {
+    private final Javalin app;
+    private static final int PUERTO = 7000;
+    
+    public ServicioWebREST() {
+        this.mensajeDAO = new MensajeDAO();
+        this.servicioValidacion = new ServicioValidacion(mensajeDAO);
+        this.gson = new Gson();
+        
+        this.app = Javalin.create(config -> {
+            config.plugins.enableCors(cors -> {
+                cors.add(it -> it.anyHost());
+            });
+        });
+        
+        configurarRutas();
+    }
+    
+    public void iniciar() {
+        app.start(PUERTO);
+        System.out.println("Servicio web REST iniciado en http://localhost:" + PUERTO);
+    }
+}
+\end{lstlisting}
+
+El servidor REST proporciona cuatro endpoints principales que permiten la interacción con el sistema de moderación:
+
+\begin{itemize}
+\item \textbf{POST /api/mensajes}: Envía un mensaje para validación automática y lo guarda en la base de datos
+\item \textbf{GET /api/mensajes/\{id\}}: Consulta el estado de un mensaje específico por su ID
+\item \textbf{GET /api/estadisticas}: Obtiene estadísticas del sistema (total de mensajes por estado)
+\item \textbf{GET /}: Información general del servicio y lista de endpoints disponibles
+\end{itemize}
+
+\subsubsection{Integración con el Sistema Principal}
+
+El servidor REST se inicia automáticamente en un hilo separado cuando se ejecuta la aplicación principal, demostrando el uso de multithreading en Java:
+
+\begin{lstlisting}[language=Java, caption=Inicio del servidor en Main.java]
+public static void main(String[] args) {
+    // Iniciar el servicio web REST en un hilo separado
+    new Thread(() -> {
+        servicioWeb = new ServicioWebREST();
+        servicioWeb.iniciar();
+    }).start();
+    
+    // Esperar a que el servidor inicie
+    try {
+        Thread.sleep(1000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    
+    // Iniciar la interfaz grafica
+    SwingUtilities.invokeLater(() -> {
+        VentanaAdmin ventana = new VentanaAdmin();
+        ventana.setVisible(true);
+        
+        // Configurar shutdown hook para detener el servidor
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (servicioWeb != null) {
+                servicioWeb.detener();
+            }
+        }));
+    });
+}
+\end{lstlisting}
+
+Este diseño demuestra varios conceptos avanzados de programación:
+\begin{itemize}
+\item \textbf{Multithreading}: El servidor REST corre en un hilo independiente
+\item \textbf{Shutdown Hooks}: Limpieza automática de recursos al cerrar la aplicación
+\item \textbf{Arquitectura Cliente-Servidor}: Separación entre la lógica de negocio y la presentación
+\end{itemize}
+
+\subsubsection{Ejemplo de Endpoint}
+
+El endpoint principal recibe un mensaje en formato JSON, lo valida usando el \texttt{ServicioValidacion}, y devuelve una respuesta detallada:
+
+\begin{lstlisting}[language=Java, caption=Endpoint POST para crear y validar mensajes]
+private void crearYValidarMensaje(Context ctx) {
+    // Leer JSON del body
+    Map<String, Object> body = gson.fromJson(ctx.body(), Map.class);
+    String contenido = (String) body.get("contenido");
+    Integer usuarioId = ((Double) body.get("usuario_id")).intValue();
+    
+    // Crear mensaje temporal
+    Mensaje mensaje = new Mensaje(0, contenido, EstadoMensaje.NUEVO, 
+                                   LocalDateTime.now(), usuarioId);
+    
+    // Ejecutar validaciones
+    List<String> razones = servicioValidacion.validarMensaje(mensaje);
+    EstadoMensaje estado = servicioValidacion.determinarEstado(razones);
+    mensaje.setEstado(estado);
+    mensaje.setRazonesBloqueo(razones);
+    
+    // Guardar en base de datos
+    int mensajeId = mensajeDAO.insertarMensaje(mensaje);
+    
+    // Crear respuesta JSON
+    Map<String, Object> respuesta = new HashMap<>();
+    respuesta.put("success", true);
+    respuesta.put("mensaje_id", mensajeId);
+    respuesta.put("estado", estado.name());
+    respuesta.put("razones_bloqueo", razones);
+    
+    ctx.status(201).json(respuesta);
+}
+\end{lstlisting}
+
+\subsubsection{Ventana de Prueba e Integración}
+
+Se implementó \texttt{VentanaPrueba.java}, una interfaz gráfica que consume el API REST utilizando \texttt{HttpURLConnection}. Esta ventana permite:
+
+\begin{itemize}
+\item Enviar mensajes de prueba al sistema de moderación
+\item Visualizar respuestas JSON formateadas con colores según el estado
+\item Probar los 8 algoritmos de validación en tiempo real
+\item Utilizar ejemplos predefinidos de mensajes problemáticos
+\item Acceder desde el menú: Herramientas $\rightarrow$ Ventana de Prueba
+\end{itemize}
+
+La ventana de prueba demuestra:
+\begin{itemize}
+\item \textbf{Consumo de APIs REST}: Uso de HttpURLConnection para realizar peticiones HTTP POST
+\item \textbf{Parseo de JSON}: Deserialización de respuestas usando Gson
+\item \textbf{Arquitectura Cliente-Servidor}: La ventana actúa como cliente del API REST
+\item \textbf{Testing de Integración}: Validación del sistema completo end-to-end
+\end{itemize}
+
+\begin{lstlisting}[language=Java, caption=Fragmento de VentanaPrueba consumiendo el API]
+private void enviarMensaje() {
+    String contenido = areaMensaje.getText().trim();
+    
+    // Crear JSON del request
+    JsonObject requestJson = new JsonObject();
+    requestJson.addProperty("contenido", contenido);
+    requestJson.addProperty("usuario_id", 1);
+    
+    // Hacer POST request
+    URL url = new URL("http://localhost:7000/api/mensajes");
+    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    con.setRequestMethod("POST");
+    con.setRequestProperty("Content-Type", "application/json");
+    
+    // Enviar datos y recibir respuesta
+    // ...
+}
+\end{lstlisting}
+
 \subsection{Gestión de Persistencia}
 
 El sistema utiliza JDBC para la persistencia de datos con las siguientes características:
@@ -1646,6 +1971,9 @@ El código fuente del sistema está disponible en el repositorio de GitHub:
 \begin{itemize}
 \item \textbf{Java 11+}: Lenguaje de programación principal
 \item \textbf{Java Swing}: Framework para la interfaz gráfica de usuario
+\item \textbf{Javalin 5.6.3}: Framework web minimalista para el API REST (similar a Flask/Express)
+\item \textbf{Gson 2.10.1}: Librería de Google para serialización/deserialización JSON
+\item \textbf{SLF4J 2.0.9}: Sistema de logging simple para el servidor web
 \item \textbf{MySQL 8.0+}: Sistema de gestión de bases de datos relacionales
 \item \textbf{JDBC}: API para conectividad con bases de datos MySQL
 \item \textbf{Docker}: Contenedorización de la base de datos para facilitar el despliegue
